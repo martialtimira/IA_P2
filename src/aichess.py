@@ -138,6 +138,7 @@ if __name__ == "__main__":
     TA[7][0] = 2
     TA[7][4] = 6
     TA[0][4] = 12
+    TA[0][7] = 8
 
     # initialise board
     print("stating AI chess... ")
