@@ -100,33 +100,7 @@ class Aichess():
     def isCheckMate(self, mystate):
 
         # Your Code
-        
-        
-        
-
-    def DepthFirstSearch(self, currentState, depth):
-    
-        # Your Code here
-
-
- 
-    def BreadthFirstSearch(self, currentState):
-            
-        # Your Code here
-
-
-
-    def BestFirstSearch(self, currentState):
-            
-        # Your Code here
-                
-                
-                
-    def AStarSearch(self, currentState):
-            
-        # Your Code here
-        
-        
+        return True
 
 def translate(s):
     """
@@ -185,7 +159,6 @@ if __name__ == "__main__":
     # aichess.chess.boardSim.listVisitedStates = []
     # find the shortest path, initial depth 0
     depth = 0
-    aichess.BreadthFirstSearch(currentState)
     #aichess.DepthFirstSearch(currentState, depth)
 
     # MovesToMake = ['1e','2e','2e','3e','3e','4d','4d','3c']
