@@ -43,7 +43,8 @@ class Aichess():
         else:
             self.chess = chess.Chess([], False)
 
-        self.listNextStates = []
+        self.listNextStatesW = []
+        self.listNextStatesB = []
         self.listVisitedStates = []
         self.pathToTarget = []
         self.currentStateW = self.chess.boardSim.currentStateW;
@@ -57,9 +58,15 @@ class Aichess():
     def getListNextStatesW(self, myState):
 
         self.chess.boardSim.getListNextStatesW(myState)
-        self.listNextStates = self.chess.boardSim.listNextStates.copy()
+        self.listNextStatesW = self.chess.boardSim.listNextStates.copy()
 
-        return self.listNextStates
+        return self.listNextStatesW
+    def getListNextStatesB(self, myState):
+
+        self.chess.boardSim.getListNextStatesB(myState)
+        self.listNextStatesB = self.chess.boardSim.listNextStates.copy()
+
+        return self.listNextStatesB
 
     def isSameState(self, a, b):
 
@@ -100,6 +107,7 @@ class Aichess():
     def isCheckMate(self, mystate):
 
         # Your Code
+
         return True
 
 def translate(s):
@@ -135,51 +143,38 @@ if __name__ == "__main__":
     # # black pieces
     # TA[0][4] = 12
 
-    TA[7][0] = 2
+    #TA[7][0] = 2
     TA[7][4] = 6
     TA[0][4] = 12
-    TA[0][7] = 8
+    #TA[0][7] = 8
 
     # initialise board
     print("stating AI chess... ")
     aichess = Aichess(TA, True)
-    currentState = aichess.chess.board.currentStateW.copy()
-
+    currentStateW = aichess.chess.board.currentStateW.copy()
+    currentStateB = aichess.chess.board.currentStateB.copy()
     print("printing board")
     aichess.chess.boardSim.print_board()
 
     # get list of next states for current state
-    print("current State", currentState)
+    print("current State Whites", currentStateW)
+    print("current State Blacks", currentStateB)
 
     # it uses board to get them... careful 
-    aichess.getListNextStatesW(currentState)
+    aichess.getListNextStatesW(currentStateW)
+    aichess.getListNextStatesB(currentStateB)
     #   aichess.getListNextStatesW([[7,4,2],[7,4,6]])
-    print("list next states ", aichess.listNextStates)
+
+    print("list next White states: ", aichess.listNextStatesW)
+    print("list next Black states: ", aichess.listNextStatesB)
 
     # starting from current state find the end state (check mate) - recursive function
     # aichess.chess.boardSim.listVisitedStates = []
     # find the shortest path, initial depth 0
     depth = 0
-    #aichess.DepthFirstSearch(currentState, depth)
 
-    # MovesToMake = ['1e','2e','2e','3e','3e','4d','4d','3c']
-
-    # for k in range(int(len(MovesToMake)/2)):
-
-    #     print("k: ",k)
-
-    #     print("start: ",MovesToMake[2*k])
-    #     print("to: ",MovesToMake[2*k+1])
-
-    #     start = translate(MovesToMake[2*k])
-    #     to = translate(MovesToMake[2*k+1])
-
-    #     print("start: ",start)
-    #     print("to: ",to)
-
-    #     aichess.chess.moveSim(start, to)
-
-    # aichess.chess.boardSim.print_board()
+    aichess.chess.boardSim.print_board()
     print("#Move sequence...  ", aichess.pathToTarget)
     print("#Visited sequence...  ", aichess.listVisitedStates)
     print("#Current State...  ", aichess.chess.board.currentStateW)
+    print("#Checkmate Status: ", aichess.checkMate)
