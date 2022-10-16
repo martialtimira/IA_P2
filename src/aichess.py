@@ -58,13 +58,13 @@ class Aichess():
     def getListNextStatesW(self, myState):
 
         self.chess.boardSim.getListNextStatesW(myState)
-        self.listNextStatesW = self.chess.boardSim.listNextStates.copy()
+        self.listNextStatesW = self.chess.boardSim.listNextStatesW.copy()
 
         return self.listNextStatesW
     def getListNextStatesB(self, myState):
 
         self.chess.boardSim.getListNextStatesB(myState)
-        self.listNextStatesB = self.chess.boardSim.listNextStates.copy()
+        self.listNextStatesB = self.chess.boardSim.listNextStatesB.copy()
 
         return self.listNextStatesB
 
@@ -143,10 +143,10 @@ if __name__ == "__main__":
     # # black pieces
     # TA[0][4] = 12
 
-    #TA[7][0] = 2
+    TA[7][0] = 2
     TA[7][4] = 6
     TA[0][4] = 12
-    #TA[0][7] = 8
+    TA[0][7] = 8
 
     # initialise board
     print("stating AI chess... ")
