@@ -167,7 +167,7 @@ def check_updown(board, start, to):
         for i in range(smaller_y + 1, bigger_y):
             if board.board[start[0]][i] != None:
                 print(blocked_path)
-                print("At: " + str(start[0], i))
+                print("At: " + str(start[0]), i)
                 return False
         return True
     else:

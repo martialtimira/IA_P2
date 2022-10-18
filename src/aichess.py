@@ -48,13 +48,16 @@ class Aichess():
         self.listVisitedStates = []
         self.pathToTarget = []
         self.currentStateW = self.chess.boardSim.currentStateW;
+        self.currentStateB = self.chess.boardSim.currentStateB;
         self.depthMax = 8;
         self.checkMate = False
 
-    def getCurrentState(self):
+    def getCurrentStateW(self):
 
-        return self.myCurrentStateW
+        return self.currentStateW
 
+    def getCurrentStateB(self):
+        return self.currentStateB
     def getListNextStatesW(self, myState):
 
         self.chess.boardSim.getListNextStatesW(myState)
@@ -104,10 +107,49 @@ class Aichess():
         else:
             return False
 
-    def isCheckMate(self, mystate):
+    def isCheckMateW(self, mystate):
 
         # Your Code
+        currentStateW = mystate
+        currentStateB = self.getCurrentStateB()
+        b_king = None
+        w_king = None
+        w_tower = None
+        threatened = False
+        for piece in currentStateW:
+            if piece[2] == 2:
+                w_tower = piece
+            if piece[2] == 6:
+                w_king = piece
 
+        for piece in currentStateB:
+            if piece[2] == 12:
+                b_king = piece
+
+        for piece in currentStateW:
+            currentPiece = self.chess.boardSim.board[piece[0]][piece[1]]
+            print(currentPiece)
+            if(currentPiece.is_valid_move(self.chess.boardSim, (piece[0], piece[1]), (b_king[0], b_king[1]))):
+                threatened = True
+
+        if threatened:
+            nextStatesB = self.getListNextStatesB(currentStateB)
+            for state in nextStatesB:
+                for piece in state:
+                    if piece[2] == 12 and piece != b_king:
+                        if (piece[0] != w_tower[0] and piece[1] != w_tower[1]):
+                            if abs(w_king[0] - piece[0]) >= 2 or abs(w_king[1] - piece[1]) >= 2:
+                                print("MOVE: ", piece)
+                                return False
+                    ##POTSER FALTA UN IF QUE MIRI PRIMER REI I DESPRES TORRE (invers dels de asobre)
+        else:
+            return False
+
+
+
+
+            #print(currentPiece.is_valid_move(self.chess.boardSim, (piece[0], piece[1]), (0, 2)))
+        self.checkMate = True
         return True
 
 def translate(s):
@@ -143,10 +185,12 @@ if __name__ == "__main__":
     # # black pieces
     # TA[0][4] = 12
 
-    TA[7][0] = 2
-    TA[7][4] = 6
-    TA[0][4] = 12
+    #White pieces
+    TA[0][0] = 2
+    TA[2][4] = 6
+    #Black pieces
     TA[0][7] = 8
+    TA[0][4] = 12
 
     # initialise board
     print("stating AI chess... ")
@@ -165,8 +209,8 @@ if __name__ == "__main__":
     aichess.getListNextStatesB(currentStateB)
     #   aichess.getListNextStatesW([[7,4,2],[7,4,6]])
 
-    print("list next White states: ", aichess.listNextStatesW)
-    print("list next Black states: ", aichess.listNextStatesB)
+    print("list next White states(,", len(aichess.listNextStatesW), "): ", aichess.listNextStatesW)
+    print("list next Black states(,", len(aichess.listNextStatesB), "): ", aichess.listNextStatesB)
 
     # starting from current state find the end state (check mate) - recursive function
     # aichess.chess.boardSim.listVisitedStates = []
@@ -177,4 +221,4 @@ if __name__ == "__main__":
     print("#Move sequence...  ", aichess.pathToTarget)
     print("#Visited sequence...  ", aichess.listVisitedStates)
     print("#Current State...  ", aichess.chess.board.currentStateW)
-    print("#Checkmate Status: ", aichess.checkMate)
+    print("#Checkmate Status: ", aichess.isCheckMateW(currentStateW))
