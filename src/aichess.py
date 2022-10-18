@@ -113,6 +113,7 @@ class Aichess():
         currentStateW = mystate
         currentStateB = self.getCurrentStateB()
         b_king = None
+        b_tower = None
         w_king = None
         w_tower = None
         threatened = False
@@ -125,10 +126,11 @@ class Aichess():
         for piece in currentStateB:
             if piece[2] == 12:
                 b_king = piece
+            if piece[2] ==8:
+                b_tower = piece
 
         for piece in currentStateW:
             currentPiece = self.chess.boardSim.board[piece[0]][piece[1]]
-            print(currentPiece)
             if(currentPiece.is_valid_move(self.chess.boardSim, (piece[0], piece[1]), (b_king[0], b_king[1]))):
                 threatened = True
 
@@ -137,10 +139,28 @@ class Aichess():
             for state in nextStatesB:
                 for piece in state:
                     if piece[2] == 12 and piece != b_king:
-                        if (piece[0] != w_tower[0] and piece[1] != w_tower[1]):
-                            if abs(w_king[0] - piece[0]) >= 2 or abs(w_king[1] - piece[1]) >= 2:
-                                print("MOVE: ", piece)
-                                return False
+                        is_safe = True
+                        for whitePiece in currentStateW:
+                            attackerPiece = self.chess.boardSim.board[whitePiece[0]][whitePiece[1]]
+                            self.chess.moveSim((b_king[0], b_king[1]), (piece[0], piece[1]), False)
+                            if attackerPiece.is_valid_move(self.chess.boardSim, (whitePiece[0], whitePiece[1]), (piece[0], piece[1])):
+                                is_safe = False
+                            self.chess.moveSim((piece[0], piece[1]), (b_king[0], b_king[1]), False)
+                        if is_safe:
+                            return False
+                        black_king = self.chess.boardSim.board[b_king[0]][b_king[1]]
+                        if black_king.is_valid_move(self.chess.boardSim, (b_king[0], b_king[1]), (w_tower[0], w_tower[1])):
+                            return False
+
+                    if piece[2] == 8 and piece != b_tower and piece[0] == w_tower[0] and piece[1] == w_tower[1]:
+                        blackTower = self.chess.boardSim.board[b_tower[0]][b_tower[1]]
+                        self.chess.moveSim((b_tower[0], b_tower[1]), (piece[0], piece[1]), False)
+                        if blackTower.is_valid_move(self.chess.boardSim, (piece[0], piece[1]), (w_tower[0], w_tower[1])):
+                            return False
+                        self.chess.moveSim((piece[0], piece[1]), (b_tower[0], b_tower[1]), False)
+
+
+
                     ##POTSER FALTA UN IF QUE MIRI PRIMER REI I DESPRES TORRE (invers dels de asobre)
         else:
             return False
