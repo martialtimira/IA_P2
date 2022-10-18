@@ -159,9 +159,6 @@ class Aichess():
                             return False
                         self.chess.moveSim((piece[0], piece[1]), (b_tower[0], b_tower[1]), False)
 
-
-
-                    ##POTSER FALTA UN IF QUE MIRI PRIMER REI I DESPRES TORRE (invers dels de asobre)
         else:
             return False
 
