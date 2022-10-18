@@ -120,8 +120,6 @@ class Aichess():
         for piece in currentStateW:
             if piece[2] == 2:
                 w_tower = piece
-            if piece[2] == 6:
-                w_king = piece
 
         for piece in currentStateB:
             if piece[2] == 12:
@@ -129,16 +127,16 @@ class Aichess():
             if piece[2] ==8:
                 b_tower = piece
 
-        for piece in currentStateW:
+        for piece in currentStateW:                                         #Check if any piece of the current state Threatens the Black King
             currentPiece = self.chess.boardSim.board[piece[0]][piece[1]]
             if(currentPiece.is_valid_move(self.chess.boardSim, (piece[0], piece[1]), (b_king[0], b_king[1]))):
                 threatened = True
 
         if threatened:
             nextStatesB = self.getListNextStatesB(currentStateB)
-            for state in nextStatesB:
+            for state in nextStatesB:                                       #Check if Black King can escape to a "non threatened" position or Black Tower can take the White one to avoid CheckMate
                 for piece in state:
-                    if piece[2] == 12 and piece != b_king:
+                    if piece[2] == 12 and piece != b_king:                  #Check if Black king can escape
                         is_safe = True
                         for whitePiece in currentStateW:
                             attackerPiece = self.chess.boardSim.board[whitePiece[0]][whitePiece[1]]
@@ -152,7 +150,7 @@ class Aichess():
                         if black_king.is_valid_move(self.chess.boardSim, (b_king[0], b_king[1]), (w_tower[0], w_tower[1])):
                             return False
 
-                    if piece[2] == 8 and piece != b_tower and piece[0] == w_tower[0] and piece[1] == w_tower[1]:
+                    if piece[2] == 8 and piece != b_tower and piece[0] == w_tower[0] and piece[1] == w_tower[1]:            #Check if Black Tower can take the White one to avoid CheckMate
                         blackTower = self.chess.boardSim.board[b_tower[0]][b_tower[1]]
                         self.chess.moveSim((b_tower[0], b_tower[1]), (piece[0], piece[1]), False)
                         if blackTower.is_valid_move(self.chess.boardSim, (piece[0], piece[1]), (w_tower[0], w_tower[1])):
