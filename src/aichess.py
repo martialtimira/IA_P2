@@ -147,7 +147,7 @@ class Aichess():
                         if is_safe:
                             return False
                         black_king = self.chess.boardSim.board[b_king[0]][b_king[1]]
-                        if black_king.is_valid_move(self.chess.boardSim, (b_king[0], b_king[1]), (w_tower[0], w_tower[1])):
+                        if black_king.is_valid_move(self.chess.boardSim, (b_king[0], b_king[1]), (w_tower[0], w_tower[1])): #Check if Tower is close enough to the King that it can take it to avoid CheckMate
                             return False
 
                     if piece[2] == 8 and piece != b_tower and piece[0] == w_tower[0] and piece[1] == w_tower[1]:            #Check if Black Tower can take the White one to avoid CheckMate
