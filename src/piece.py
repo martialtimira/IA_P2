@@ -239,10 +239,11 @@ class Rook(Piece):
         self.name = "R"
         self.first_move = first_move 
 
-    def is_valid_move(self, board, start, to):
+    def is_valid_move(self, board, start, to, verbose = False):
         if start[0] == to[0] or start[1] == to[1]:
             return check_updown(board, start, to)
-        print(incorrect_path)
+        if verbose:
+            print(incorrect_path)
         return False
 
 class Knight(Piece):
@@ -437,7 +438,7 @@ class King(Piece):
             return True
 
 
-    def is_valid_move(self, board, start, to):
+    def is_valid_move(self, board, start, to, verbose = False):
         if self.first_move and abs(start[1] - to[1]) == 2 and start[0] - to[0] == 0:
             return self.can_castle(board, start, to, to[1] - start[1] > 0)
 
@@ -446,7 +447,8 @@ class King(Piece):
                 self.first_move = False
                 return True
 
-        print(incorrect_path)
+        if verbose:
+            print(incorrect_path)
         return False
 
 

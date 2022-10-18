@@ -203,10 +203,10 @@ if __name__ == "__main__":
     # TA[0][4] = 12
 
     #White pieces
-    TA[0][0] = 2
+    TA[0][3] = 2
     TA[2][4] = 6
     #Black pieces
-    TA[0][7] = 8
+    TA[2][0] = 8
     TA[0][4] = 12
 
     # initialise board
