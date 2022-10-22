@@ -58,12 +58,14 @@ class Aichess():
 
     def getCurrentStateB(self):
         return self.currentStateB
+
     def getListNextStatesW(self, myState):
 
         self.chess.boardSim.getListNextStatesW(myState)
         self.listNextStatesW = self.chess.boardSim.listNextStatesW.copy()
 
         return self.listNextStatesW
+
     def getListNextStatesB(self, myState):
 
         self.chess.boardSim.getListNextStatesB(myState)
@@ -107,6 +109,30 @@ class Aichess():
         else:
             return False
 
+    def getMoveFromStates(self, currentState, nextState):
+        """
+        Returns the "start" and "to" points of a move from its 2 states
+        Args:
+            currentState: Current State of the board
+            nextState: State of the Board after the move
+
+        Returns: Starting coordinates, To coordinates, piece ID
+
+        """
+        start = None
+        to = None
+        piece = None
+
+        for element in currentState:  # compare each element of both states, to find the one in the current state that isn't
+            if element not in nextState:  # on the next state, and define that one as the starting point, also define which piece it is
+                start = (element[0], element[1])
+                piece = element[2]
+        for element in nextState:  # repeat, but instead find the one in nextState that isn't in currentState, and
+            if element not in currentState:  # define that one as the "to" point.
+                to = (element[0], element[1])
+
+        return start, to, piece
+
     def isCheckMateW(self, mystate):
 
         # Your Code
@@ -124,19 +150,19 @@ class Aichess():
         for piece in currentStateB:
             if piece[2] == 12:
                 b_king = piece
-            if piece[2] ==8:
+            if piece[2] == 8:
                 b_tower = piece
 
-        for piece in currentStateW:                                         #Check if any piece of the current state Threatens the Black King
+        for piece in currentStateW:  # Check if any piece of the current state Threatens the Black King
             currentPiece = self.chess.boardSim.board[piece[0]][piece[1]]
-            if(currentPiece.is_valid_move(self.chess.boardSim, (piece[0], piece[1]), (b_king[0], b_king[1]))):
+            if currentPiece.is_valid_move(self.chess.boardSim, (piece[0], piece[1]), (b_king[0], b_king[1])):
                 threatened = True
 
         if threatened:
             nextStatesB = self.getListNextStatesB(currentStateB)
-            for state in nextStatesB:                                       #Check if Black King can escape to a "non threatened" position or Black Tower can take the White one to avoid CheckMate
+            for state in nextStatesB:  # Check if Black King can escape to a "non threatened" position or Black Tower can take the White one to avoid CheckMate
                 for piece in state:
-                    if piece[2] == 12 and piece != b_king:                  #Check if Black king can escape
+                    if piece[2] == 12 and piece != b_king:  # Check if Black king can escape
                         is_safe = True
                         for whitePiece in currentStateW:
                             attackerPiece = self.chess.boardSim.board[whitePiece[0]][whitePiece[1]]
@@ -160,12 +186,64 @@ class Aichess():
         else:
             return False
 
-
-
-
-            #print(currentPiece.is_valid_move(self.chess.boardSim, (piece[0], piece[1]), (0, 2)))
+            # print(currentPiece.is_valid_move(self.chess.boardSim, (piece[0], piece[1]), (0, 2)))
         self.checkMate = True
         return True
+
+    def evaluaEstat(self):
+        return 0
+
+    def min(self, depth):
+
+        if depth is not 0:
+            depth -= 1
+            minim = sys.maxint
+            now = self.getCurrentStateB()
+            future_state = None
+            path = None
+
+            for estat in self.getListNextStatesB(now):
+                start, to, piece = self.getMoveFromStates(now, estat)
+                self.chess.moveSim(start, to)
+                t, e = self.max(depth)
+                if minim > t:
+                    minim = t
+                    future_state = estat
+                    path = e
+                start, to, piece = self.getMoveFromStates(estat, now)
+                self.chess.moveSim(start, to)
+
+            path.append(future_state)
+            return minim, path
+
+        return self.evaluaEstat(), []
+
+    # S'inicia minimax cridant a max primer
+    def max(self, depth):
+
+        if depth is not 0:
+            depth -= 1
+            maxim = - sys.maxint
+            now = self.getCurrentStateW()
+            future_state = None
+            path = None
+
+            for estat in self.getListNextStatesW(now):
+                start, to, piece = self.getMoveFromStates(now, estat)
+                self.chess.moveSim(start, to)
+                t, e = self.min(now)
+                if maxim < t:
+                    maxim = t
+                    future_state = estat
+                    path = e
+                start, to, piece = self.getMoveFromStates(estat, now)
+                self.chess.moveSim(start, to)
+
+            path.append(future_state)
+            return maxim, path
+
+        return self.evaluaEstat(), []
+
 
 def translate(s):
     """
@@ -195,17 +273,18 @@ if __name__ == "__main__":
     # intiialize board
     TA = np.zeros((8, 8))
     # white pieces
-    # TA[0][0] = 2
-    # TA[2][4] = 6
-    # # black pieces
-    # TA[0][4] = 12
-
-    #White pieces
-    TA[0][3] = 2
+    TA[0][0] = 2
     TA[2][4] = 6
-    #Black pieces
-    TA[2][0] = 8
+    # # black pieces
+    TA[0][6] = 8
     TA[0][4] = 12
+
+    # White pieces
+    # TA[0][3] = 2
+    # TA[2][4] = 6
+    # Black pieces
+    # TA[2][0] = 8
+    # TA[0][4] = 12
 
     # initialise board
     print("stating AI chess... ")

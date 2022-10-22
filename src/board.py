@@ -101,8 +101,6 @@ class Board():
                     # White
                     if initState[i][j] == 1:
                         self.board[i][j] = piece.Pawn(True)
-                        # assign AI State
-
                     elif initState[i][j] == 2:
                         self.board[i][j] = piece.Rook(True)
                     elif initState[i][j] == 3:
