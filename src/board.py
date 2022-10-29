@@ -41,7 +41,7 @@ class Board():
         Initializes the board per standard chess rules
         """
         #PREGUNTAR: caballos es 'H' aqui pero 'N' en Piece.py???
-        self.listNames = ['P', 'R', 'H', 'B', 'Q', 'K', 'P', 'R', 'H', 'B', 'Q', 'K']
+        self.listNames = ['P', 'R', 'H', 'B', 'Q', 'K', 'P', ('\033[94m' + 'R' + '\033[0m'), 'H', 'B', 'Q', ('\033[94m' + 'K' + '\033[0m')]
 
         self.listSuccessorStatesW = []
         self.listNextStatesW = []

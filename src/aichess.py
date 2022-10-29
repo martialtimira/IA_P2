@@ -5,7 +5,6 @@ Created on Thu Sep  8 11:22:03 2022
 
 @author: ignasi
 """
-import copy
 
 import chess
 import numpy as np
@@ -107,6 +106,28 @@ class Aichess():
         else:
             return False
 
+    def getMoveFromStates(self, currentState, nextState):
+        """
+        Returns the "start" and "to" points of a move from its 2 states
+        Args:
+            currentState: Current State of the board
+            nextState: State of the Board after the move
+        Returns: Starting coordinates, To coordinates, piece ID
+        """
+        start = None
+        to = None
+        piece = None
+
+        for element in currentState:  # compare each element of both states, to find the one in the current state that isn't
+            if element not in nextState:  # on the next state, and define that one as the starting point, also define which piece it is
+                start = (element[0], element[1])
+                piece = element[2]
+        for element in nextState:  # repeat, but instead find the one in nextState that isn't in currentState, and
+            if element not in currentState:  # define that one as the "to" point.
+                to = (element[0], element[1])
+
+        return start, to, piece
+
     def isCheckMateW(self, mystate):
 
         # Your Code
@@ -120,17 +141,23 @@ class Aichess():
         for piece in currentStateW:
             if piece[2] == 2:
                 w_tower = piece.copy()
+            if piece[2] == 6:
+                w_king = piece.copy()
 
         for piece in currentStateB:
             if piece[2] == 12:
                 b_king = piece.copy()
             if piece[2] ==8:
                 b_tower = piece.copy()
+        black_king = self.chess.boardSim.board[b_king[0]][b_king[1]]
+        if black_king.is_valid_move(self.chess.boardSim, (b_king[0], b_king[1]), (w_king[0], w_king[1]), False):
+            return False
 
         for piece in currentStateW:                                         #Check if any piece of the current state Threatens the Black King
             currentPiece = self.chess.boardSim.board[piece[0]][piece[1]]
-            if(currentPiece.is_valid_move(self.chess.boardSim, (piece[0], piece[1]), (b_king[0], b_king[1]))):
-                threatened = True
+            if currentPiece != None:
+                if(currentPiece.is_valid_move(self.chess.boardSim, (piece[0], piece[1]), (b_king[0], b_king[1])), False):
+                    threatened = True
 
         if threatened:
             nextStatesB = self.getListNextStatesB(currentStateB)
@@ -141,18 +168,18 @@ class Aichess():
                         for whitePiece in currentStateW:
                             attackerPiece = self.chess.boardSim.board[whitePiece[0]][whitePiece[1]]
                             self.chess.moveSim((b_king[0], b_king[1]), (piece[0], piece[1]), False)
-                            if attackerPiece.is_valid_move(self.chess.boardSim, (whitePiece[0], whitePiece[1]), (piece[0], piece[1])):
+                            if attackerPiece.is_valid_move(self.chess.boardSim, (whitePiece[0], whitePiece[1]), (piece[0], piece[1]), False):
                                 is_safe = False
                             self.chess.moveSim((piece[0], piece[1]), (b_king[0], b_king[1]), False)
                         if is_safe:
                             return False
                         black_king = self.chess.boardSim.board[b_king[0]][b_king[1]]
-                        if black_king.is_valid_move(self.chess.boardSim, (b_king[0], b_king[1]), (w_tower[0], w_tower[1])): #Check if Tower is close enough to the King that it can take it to avoid CheckMate
+                        if black_king.is_valid_move(self.chess.boardSim, (b_king[0], b_king[1]), (w_tower[0], w_tower[1]), False): #Check if Tower is close enough to the King that it can take it to avoid CheckMate
                             return False
 
                     if piece[2] == 8 and piece != b_tower and piece[0] == w_tower[0] and piece[1] == w_tower[1]:            #Check if Black Tower can take the White one to avoid CheckMate
                         blackTower = self.chess.boardSim.board[b_tower[0]][b_tower[1]]
-                        if blackTower.is_valid_move(self.chess.boardSim, (b_tower[0], b_tower[1]), (w_tower[0], w_tower[1])):
+                        if blackTower.is_valid_move(self.chess.boardSim, (b_tower[0], b_tower[1]), (w_tower[0], w_tower[1]), False):
                             return False
 
         else:
@@ -173,17 +200,23 @@ class Aichess():
         for piece in currentStateB:
             if piece[2] == 8:
                 b_tower = piece.copy()
+            if piece[2] == 12:
+                b_king = piece.copy()
 
         for piece in currentStateW:
             if piece[2] == 6:
                 w_king = piece.copy()
             if piece[2] == 2:
                 w_tower = piece.copy()
+        white_king = self.chess.boardSim.board[w_king[0]][w_king[1]]
+        if white_king.is_valid_move(self.chess.boardSim, (w_king[0], w_king[1]), (b_king[0], b_king[1]), False):
+            return False
 
         for piece in currentStateB:                                         #Check if any piece of the current state Threatens the White King
             currentPiece = self.chess.boardSim.board[piece[0]][piece[1]]
-            if(currentPiece.is_valid_move(self.chess.boardSim, (piece[0], piece[1]), (w_king[0], w_king[1]))):
-                threatened = True
+            if currentPiece != None:
+                if(currentPiece.is_valid_move(self.chess.boardSim, (piece[0], piece[1]), (w_king[0], w_king[1]), False)):
+                    threatened = True
 
         if threatened:
             nextStatesW = self.getListNextStatesW(currentStateW)
@@ -194,17 +227,17 @@ class Aichess():
                         for blackPiece in currentStateB:
                             attackerPiece = self.chess.boardSim.board[blackPiece[0]][blackPiece[1]]
                             self.chess.moveSim((w_king[0], w_king[1]), (piece[0], piece[1]), False)
-                            if attackerPiece.is_valid_move(self.chess.boardSim, (blackPiece[0], blackPiece[1]), (piece[0], piece[1])):
+                            if attackerPiece.is_valid_move(self.chess.boardSim, (blackPiece[0], blackPiece[1]), (piece[0], piece[1]), False):
                                 is_safe = False
                             self.chess.moveSim((piece[0], piece[1]), (w_king[0], w_king[1]), False)
                         if is_safe:
                             return False
                         white_king = self.chess.boardSim.board[w_king[0]][w_king[1]]
-                        if white_king.is_valid_move(self.chess.boardSim, (w_king[0], w_king[1]), (b_tower[0], b_tower[1])): #Check if Tower is close enough to the King that it can take it to avoid CheckMate
+                        if white_king.is_valid_move(self.chess.boardSim, (w_king[0], w_king[1]), (b_tower[0], b_tower[1]), False): #Check if Tower is close enough to the King that it can take it to avoid CheckMate
                             return False
                     if piece[2] == 2 and piece != w_tower and piece[0] == b_tower[0] and piece[1] == b_tower[1]:            #Check if White Tower can take the Black one to avoid CheckMate
                         whiteTower = self.chess.boardSim.board[w_tower[0]][w_tower[1]]
-                        if whiteTower.is_valid_move(self.chess.boardSim, (piece[0], piece[1]), (b_tower[0], b_tower[1])):
+                        if whiteTower.is_valid_move(self.chess.boardSim, (piece[0], piece[1]), (b_tower[0], b_tower[1]), False):
                             return False
 
         else:
@@ -212,6 +245,94 @@ class Aichess():
 
         self.checkMate = True
         return True
+
+    def utility(self, state):
+        utility = 15.06225774829855           #start with a neutral utility score
+        w_king = None
+        b_king = None
+        w_tower = None
+
+        if self.isCheckMateW(state):            #if it's check mate, return the utility score
+            return utility
+        if self.isCheckMateB(self.getCurrentStateB()):
+            return -utility
+
+        for piece in state:
+            if piece[2] == 6:
+                w_king = piece.copy()
+            if piece[2] == 2:
+                w_tower = piece.copy()
+        for piece in self.getCurrentStateB():
+            if piece[2] == 12:
+                b_king = piece.copy()
+
+        w_king_array = np.array([w_king[0], w_king[1]])         #make arrays of positions of white king
+        b_king_array = np.array([b_king[0], b_king[1]])         #black king
+        w_tower_array = np.array([w_tower[0], w_tower[1]])      #white tower
+
+        if w_tower != None:                                     #if White tower isn't taken, check if it's in the same
+            if w_tower[0] != b_king[0] and w_tower[1] != b_king[1]: #row or column as the black king, and if it isn't
+                utility -= np.linalg.norm(w_tower_array - b_king_array) #subtract its euclidean distance to the utility score
+
+        if (b_king[0] != 0 and b_king[0] != 7) and (b_king[1] != 0 and b_king[1] != 7): #If the black king isn't on an edge of the board
+            if b_king[0] != 0 and b_king[0] != 7:                                       #Subtract the minimum between the 2 axis distances to the nearest edge
+                utility -= min(b_king[0], (7 - b_king[0])) * 2
+            if b_king[1] != 0 and b_king[1] != 7:
+                utility -= min(b_king[1], (7 - b_king[1])) * 2
+
+        utility -= np.linalg.norm(w_king_array - b_king_array)      #subtract the euclidean distance between the 2 kings
+        return utility
+
+    def miniMax(self, mystate, depth):
+        self.depthMax = depth
+        move = ()
+        if self.isCheckMateW(mystate):
+            return move
+
+        v = self.max_value(mystate, 0)
+        for state in self.getListNextStatesW(mystate):
+            start, to, piece = self.getMoveFromStates(mystate, state)
+            self.chess.moveSim(start, to, False)
+            if self.utility(state) == v:
+                print("YOO")
+                print(mystate)
+                print(state)
+                print(v)
+                start_f, to_f, piece_f = self.getMoveFromStates(mystate, state)
+                move = (start_f, to_f)
+                self.chess.moveSim(to, start, False)
+                return move
+            self.chess.moveSim(to, start, False)
+        return move
+
+    def max_value(self, mystate, depth):
+        print("ye")
+        print(depth)
+        if depth > self.depthMax or self.isCheckMateW(mystate):
+            self.chess.boardSim.print_board()
+            return self.utility(mystate)
+        v = -sys.maxsize
+        for state in self.getListNextStatesW(mystate):
+            start, to, piece = self.getMoveFromStates(mystate, state)
+            self.chess.moveSim(start, to, False)
+            v = max(v, self.min_value(state, depth+1))
+            self.chess.moveSim(to, start, False)
+        return v
+
+    def min_value(self, mystate, depth):
+        print("yo")
+        print(depth)
+        currentState = self.getCurrentStateB().copy()
+        if depth > self.depthMax or self.isCheckMateW(mystate):
+            return self.utility(mystate)
+        v = sys.maxsize
+
+        for state in self.getListNextStatesB(currentState):
+            start, to, piece = self.getMoveFromStates(currentState, state)
+            self.chess.moveSim(start, to, False)
+            v = min(v, self.max_value(self.getCurrentStateW(), depth + 1))
+            self.chess.moveSim(to, start, False)
+        return v
 
 def translate(s):
     """
@@ -247,10 +368,12 @@ if __name__ == "__main__":
     # TA[0][4] = 12
 
     #White pieces
-    TA[0][1] = 2
-    TA[2][4] = 6
+    TA[7][0] = 2
+    TA[7][4] = 6
+    #TA[0][0] = 2
+    #TA[2][4] = 6
     #Black pieces
-    TA[2][0] = 8
+    TA[0][7] = 8
     TA[0][4] = 12
 
     # initialise board
@@ -278,9 +401,15 @@ if __name__ == "__main__":
     # find the shortest path, initial depth 0
     depth = 0
 
+    print("Next move: ", aichess.miniMax(currentStateW, depth))
+    #print("U: ", aichess.utility(currentStateW))
+    #print(aichess.getCurrentStateB())
+    #aichess.chess.moveSim((0,7), (1,7))
+    #print(aichess.getCurrentStateB())
+
     aichess.chess.boardSim.print_board()
     print("#Move sequence...  ", aichess.pathToTarget)
     print("#Visited sequence...  ", aichess.listVisitedStates)
     print("#Current State...  ", aichess.chess.board.currentStateW)
-    print("#Checkmate Status White: ", aichess.isCheckMateW(currentStateW))
-    print("#Checkmate Status Black: ", aichess.isCheckMateB(currentStateB))
+    #print("#Checkmate Status White: ", aichess.isCheckMateW(currentStateW))
+    #print("#Checkmate Status Black: ", aichess.isCheckMateB(currentStateB))
