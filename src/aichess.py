@@ -168,8 +168,9 @@ class Aichess():
                         for whitePiece in currentStateW:
                             attackerPiece = self.chess.boardSim.board[whitePiece[0]][whitePiece[1]]
                             self.chess.moveSim((b_king[0], b_king[1]), (piece[0], piece[1]), False)
-                            if attackerPiece.is_valid_move(self.chess.boardSim, (whitePiece[0], whitePiece[1]), (piece[0], piece[1]), False):
-                                is_safe = False
+                            if attackerPiece != None:
+                                if attackerPiece.is_valid_move(self.chess.boardSim, (whitePiece[0], whitePiece[1]), (piece[0], piece[1]), False):
+                                    is_safe = False
                             self.chess.moveSim((piece[0], piece[1]), (b_king[0], b_king[1]), False)
                         if is_safe:
                             return False
@@ -227,8 +228,9 @@ class Aichess():
                         for blackPiece in currentStateB:
                             attackerPiece = self.chess.boardSim.board[blackPiece[0]][blackPiece[1]]
                             self.chess.moveSim((w_king[0], w_king[1]), (piece[0], piece[1]), False)
-                            if attackerPiece.is_valid_move(self.chess.boardSim, (blackPiece[0], blackPiece[1]), (piece[0], piece[1]), False):
-                                is_safe = False
+                            if attackerPiece != None:
+                                if attackerPiece.is_valid_move(self.chess.boardSim, (blackPiece[0], blackPiece[1]), (piece[0], piece[1]), False):
+                                    is_safe = False
                             self.chess.moveSim((piece[0], piece[1]), (w_king[0], w_king[1]), False)
                         if is_safe:
                             return False
@@ -283,18 +285,22 @@ class Aichess():
         utility -= np.linalg.norm(w_king_array - b_king_array)      #subtract the euclidean distance between the 2 kings
         return utility
 
+    #TRY TWEAKING MAX AND MINVALUES TO RETURN THE PATH (state_list and whatever)
     def miniMax(self, mystate, depth):
         self.depthMax = depth
         move = ()
         if self.isCheckMateW(mystate):
             return move
 
-        v = self.max_value(mystate, 0)
+        v, state_list = self.max_value(mystate, 0)
+        print("CS: ", mystate)
+        print("SL: ", state_list)
+        print("V: ", v)
         for state in self.getListNextStatesW(mystate):
             start, to, piece = self.getMoveFromStates(mystate, state)
             self.chess.moveSim(start, to, False)
             if self.utility(state) == v:
-                print("YOO")
+                print("found")
                 print(mystate)
                 print(state)
                 print(v)
@@ -306,33 +312,31 @@ class Aichess():
         return move
 
     def max_value(self, mystate, depth):
-        print("ye")
-        print(depth)
         if depth > self.depthMax or self.isCheckMateW(mystate):
-            self.chess.boardSim.print_board()
-            return self.utility(mystate)
+            return self.utility(mystate), mystate
         v = -sys.maxsize
         for state in self.getListNextStatesW(mystate):
             start, to, piece = self.getMoveFromStates(mystate, state)
             self.chess.moveSim(start, to, False)
-            v = max(v, self.min_value(state, depth+1))
+            t, state_list = self.min_value(state, depth+1)
+            v = max(v, t)
             self.chess.moveSim(to, start, False)
-        return v
+        return v, state_list
 
     def min_value(self, mystate, depth):
-        print("yo")
-        print(depth)
+
         currentState = self.getCurrentStateB().copy()
         if depth > self.depthMax or self.isCheckMateW(mystate):
-            return self.utility(mystate)
+            return self.utility(mystate), mystate
         v = sys.maxsize
 
         for state in self.getListNextStatesB(currentState):
             start, to, piece = self.getMoveFromStates(currentState, state)
             self.chess.moveSim(start, to, False)
-            v = min(v, self.max_value(self.getCurrentStateW(), depth + 1))
+            t, state_list = self.max_value(self.getCurrentStateW(), depth + 1)
+            v = min(v, t)
             self.chess.moveSim(to, start, False)
-        return v
+        return v, state_list
 
 def translate(s):
     """
@@ -399,7 +403,7 @@ if __name__ == "__main__":
     # starting from current state find the end state (check mate) - recursive function
     # aichess.chess.boardSim.listVisitedStates = []
     # find the shortest path, initial depth 0
-    depth = 0
+    depth = 1
 
     print("Next move: ", aichess.miniMax(currentStateW, depth))
     #print("U: ", aichess.utility(currentStateW))
