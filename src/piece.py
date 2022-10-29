@@ -145,7 +145,7 @@ def check_updown_castle(color, board, start, to):
         
     return True
 
-def check_updown(board, start, to):
+def check_updown(board, start, to, verbose = True):
     
     """
     Checks if there are no pieces along the vertical or horizontal path
@@ -166,8 +166,9 @@ def check_updown(board, start, to):
 
         for i in range(smaller_y + 1, bigger_y):
             if board.board[start[0]][i] != None:
-                print(blocked_path)
-                print("At: " + str(start[0]), i)
+                if verbose:
+                    print(blocked_path)
+                    print("At: " + str(start[0]), i)
                 return False
         return True
     else:
@@ -176,7 +177,8 @@ def check_updown(board, start, to):
 
         for i in range(smaller_x + 1, bigger_x):
             if board.board[i][start[1]] != None:
-                print(blocked_path)
+                if verbose:
+                    print(blocked_path)
                 return False
         return True
 
@@ -241,7 +243,7 @@ class Rook(Piece):
 
     def is_valid_move(self, board, start, to, verbose = False):
         if start[0] == to[0] or start[1] == to[1]:
-            return check_updown(board, start, to)
+            return check_updown(board, start, to, verbose = verbose)
         if verbose:
             print(incorrect_path)
         return False
