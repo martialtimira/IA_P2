@@ -10,6 +10,7 @@ import chess
 import numpy as np
 import sys
 import queue
+import piece
 from typing import List
 
 RawStateType = List[List[List[int]]]
@@ -150,8 +151,9 @@ class Aichess():
             if piece[2] ==8:
                 b_tower = piece.copy()
         black_king = self.chess.boardSim.board[b_king[0]][b_king[1]]
-        if black_king.is_valid_move(self.chess.boardSim, (b_king[0], b_king[1]), (w_king[0], w_king[1]), False):
-            return False
+        if black_king != None:
+            if black_king.is_valid_move(self.chess.boardSim, (b_king[0], b_king[1]), (w_king[0], w_king[1]), False):
+                return False
 
         for piece in currentStateW:                                         #Check if any piece of the current state Threatens the Black King
             currentPiece = self.chess.boardSim.board[piece[0]][piece[1]]
@@ -210,8 +212,9 @@ class Aichess():
             if piece[2] == 2:
                 w_tower = piece.copy()
         white_king = self.chess.boardSim.board[w_king[0]][w_king[1]]
-        if white_king.is_valid_move(self.chess.boardSim, (w_king[0], w_king[1]), (b_king[0], b_king[1]), False):
-            return False
+        if white_king != None:
+            if white_king.is_valid_move(self.chess.boardSim, (w_king[0], w_king[1]), (b_king[0], b_king[1]), False):
+                return False
 
         for piece in currentStateB:                                         #Check if any piece of the current state Threatens the White King
             currentPiece = self.chess.boardSim.board[piece[0]][piece[1]]
@@ -296,47 +299,66 @@ class Aichess():
         print("CS: ", mystate)
         print("SL: ", state_list)
         print("V: ", v)
-        for state in self.getListNextStatesW(mystate):
-            start, to, piece = self.getMoveFromStates(mystate, state)
-            self.chess.moveSim(start, to, False)
-            if self.utility(state) == v:
-                print("found")
-                print(mystate)
-                print(state)
-                print(v)
-                start_f, to_f, piece_f = self.getMoveFromStates(mystate, state)
-                move = (start_f, to_f)
-                self.chess.moveSim(to, start, False)
-                return move
-            self.chess.moveSim(to, start, False)
+        #start, to, piece = self.getMoveFromStates()
         return move
 
     def max_value(self, mystate, depth):
+        return_state = [mystate]
+        initial_list = [mystate]
         if depth > self.depthMax or self.isCheckMateW(mystate):
-            return self.utility(mystate), mystate
+            return self.utility(mystate), return_state
         v = -sys.maxsize
         for state in self.getListNextStatesW(mystate):
-            start, to, piece = self.getMoveFromStates(mystate, state)
+            start, to, piece_moved = self.getMoveFromStates(mystate, state)
+            pieceThere = self.chess.boardSim.board[to[0]][to[1]]
             self.chess.moveSim(start, to, False)
             t, state_list = self.min_value(state, depth+1)
-            v = max(v, t)
+            #v = max(v, t)
+            if t > v:
+                v = t
+                return_state = initial_list + state_list
+
             self.chess.moveSim(to, start, False)
-        return v, state_list
+            if pieceThere != None:
+                if pieceThere.name == 'R' and not pieceThere.color:
+                    self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(False)
+                if pieceThere.name == 'K' and not pieceThere.color:
+                    self.chess.boardSim.board[to[0]][to[1]] = piece.King(False)
+                if pieceThere.name == 'R' and pieceThere.color:
+                    self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(True)
+                if pieceThere.name == 'K' and pieceThere.color:
+                    self.chess.boardSim.board[to[0]][to[1]] = piece.King(True)
+
+        return v, return_state
 
     def min_value(self, mystate, depth):
-
+        return_state = [mystate]
+        initial_list = [mystate]
         currentState = self.getCurrentStateB().copy()
         if depth > self.depthMax or self.isCheckMateW(mystate):
-            return self.utility(mystate), mystate
+            return self.utility(mystate), return_state
         v = sys.maxsize
 
         for state in self.getListNextStatesB(currentState):
-            start, to, piece = self.getMoveFromStates(currentState, state)
+            start, to, piece_moved = self.getMoveFromStates(currentState, state)
+            pieceThere = self.chess.boardSim.board[to[0]][to[1]]
             self.chess.moveSim(start, to, False)
             t, state_list = self.max_value(self.getCurrentStateW(), depth + 1)
             v = min(v, t)
+            if t < v:
+                v = t
+                return_state = initial_list + state_list
             self.chess.moveSim(to, start, False)
-        return v, state_list
+            if pieceThere != None:
+                if pieceThere.name == 'R' and not pieceThere.color:
+                    self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(False)
+                if pieceThere.name == 'K' and not pieceThere.color:
+                    self.chess.boardSim.board[to[0]][to[1]] = piece.King(False)
+                if pieceThere.name == 'R' and pieceThere.color:
+                    self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(True)
+                if pieceThere.name == 'K' and pieceThere.color:
+                    self.chess.boardSim.board[to[0]][to[1]] = piece.King(True)
+        return v, return_state
 
 def translate(s):
     """
@@ -403,7 +425,7 @@ if __name__ == "__main__":
     # starting from current state find the end state (check mate) - recursive function
     # aichess.chess.boardSim.listVisitedStates = []
     # find the shortest path, initial depth 0
-    depth = 1
+    depth = 3
 
     print("Next move: ", aichess.miniMax(currentStateW, depth))
     #print("U: ", aichess.utility(currentStateW))
