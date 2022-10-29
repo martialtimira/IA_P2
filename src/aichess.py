@@ -287,7 +287,7 @@ class Aichess():
         utility -= np.linalg.norm(w_king_array - b_king_array)* 10    #subtract the euclidean distance between the 2 kings
         return utility
 
-    #TRY TWEAKING MAX AND MINVALUES TO RETURN THE PATH (state_list and whatever)
+    #MiniMax, max_value and min_value for white pieces
     def miniMax(self, mystate, depth):
         self.depthMax = depth
         move = ()
@@ -295,12 +295,10 @@ class Aichess():
             return move
 
         v, state_list = self.max_value(mystate, 0)
-        print(len(state_list))
         if len(state_list) == 2:
             start, to, piece = self.getMoveFromStates(self.currentStateW, state_list[1])
             move = (start, to)
-        print(state_list)
-        print(v)
+
         return move
 
     def max_value(self, mystate, depth):
@@ -426,11 +424,13 @@ if __name__ == "__main__":
     # starting from current state find the end state (check mate) - recursive function
     # aichess.chess.boardSim.listVisitedStates = []
     # find the shortest path, initial depth 0
-    depth = 1
+    depth = 3
+    move_number = 0
     while not aichess.isCheckMateW(aichess.getCurrentStateW()):
         currentStateW = aichess.getCurrentStateW()
         nextMove = aichess.miniMax(currentStateW, depth)
         aichess.chess.moveSim(nextMove[0],nextMove[1])
+        move_number += 1
 
     #print("U: ", aichess.utility(currentStateW))
     #print(aichess.getCurrentStateB())
@@ -438,6 +438,7 @@ if __name__ == "__main__":
     #print(aichess.getCurrentStateB())
 
     aichess.chess.boardSim.print_board()
+    print("#Moves Performed: ", move_number)
     print("#Move sequence...  ", aichess.pathToTarget)
     print("#Visited sequence...  ", aichess.listVisitedStates)
     print("#Current State...  ", aichess.chess.board.currentStateW)
