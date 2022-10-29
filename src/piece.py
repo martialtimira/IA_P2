@@ -358,10 +358,11 @@ class King(Piece):
             if not knight_attack: 
                 return False
 
-            diags = check_diag_castle(self.color, board, (7, 2), (5, 0)) and \
-                check_diag_castle(self.color, board, (7, 3), (4, 0)) and \
-                check_diag_castle(self.color, board, (7, 2), (2, 7)) and \
-                check_diag_castle(self.color, board, (7, 3), (3, 7))
+            diags = False
+            #diags = check_diag_castle(self.color, board, (7, 2), (5, 0)) and \
+                #check_diag_castle(self.color, board, (7, 3), (4, 0)) and \
+                #check_diag_castle(self.color, board, (7, 2), (2, 7)) and \
+                #check_diag_castle(self.color, board, (7, 3), (3, 7))
             if not diags:
                 return False
 

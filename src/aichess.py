@@ -256,7 +256,6 @@ class Aichess():
         w_king = None
         b_king = None
         w_tower = None
-
         if self.isCheckMateW(state):            #if it's check mate, return the utility score
             return utility
         if self.isCheckMateB(self.getCurrentStateB()):
@@ -277,7 +276,7 @@ class Aichess():
 
         if w_tower != None:                                     #if White tower isn't taken, check if it's in the same
             if w_tower[0] != b_king[0] and w_tower[1] != b_king[1]: #row or column as the black king, and if it isn't
-                utility -= np.linalg.norm(w_tower_array - b_king_array) #subtract its euclidean distance to the utility score
+                utility -= np.linalg.norm(w_tower_array - b_king_array) / 10 #subtract its euclidean distance to the utility score
 
         if (b_king[0] != 0 and b_king[0] != 7) and (b_king[1] != 0 and b_king[1] != 7): #If the black king isn't on an edge of the board
             if b_king[0] != 0 and b_king[0] != 7:                                       #Subtract the minimum between the 2 axis distances to the nearest edge
@@ -285,7 +284,7 @@ class Aichess():
             if b_king[1] != 0 and b_king[1] != 7:
                 utility -= min(b_king[1], (7 - b_king[1])) * 2
 
-        utility -= np.linalg.norm(w_king_array - b_king_array)      #subtract the euclidean distance between the 2 kings
+        utility -= np.linalg.norm(w_king_array - b_king_array)* 10    #subtract the euclidean distance between the 2 kings
         return utility
 
     #TRY TWEAKING MAX AND MINVALUES TO RETURN THE PATH (state_list and whatever)
@@ -296,10 +295,12 @@ class Aichess():
             return move
 
         v, state_list = self.max_value(mystate, 0)
-        print("CS: ", mystate)
-        print("SL: ", state_list)
-        print("V: ", v)
-        #start, to, piece = self.getMoveFromStates()
+        print(len(state_list))
+        if len(state_list) == 2:
+            start, to, piece = self.getMoveFromStates(self.currentStateW, state_list[1])
+            move = (start, to)
+        print(state_list)
+        print(v)
         return move
 
     def max_value(self, mystate, depth):
@@ -425,9 +426,12 @@ if __name__ == "__main__":
     # starting from current state find the end state (check mate) - recursive function
     # aichess.chess.boardSim.listVisitedStates = []
     # find the shortest path, initial depth 0
-    depth = 3
+    depth = 1
+    while not aichess.isCheckMateW(aichess.getCurrentStateW()):
+        currentStateW = aichess.getCurrentStateW()
+        nextMove = aichess.miniMax(currentStateW, depth)
+        aichess.chess.moveSim(nextMove[0],nextMove[1])
 
-    print("Next move: ", aichess.miniMax(currentStateW, depth))
     #print("U: ", aichess.utility(currentStateW))
     #print(aichess.getCurrentStateB())
     #aichess.chess.moveSim((0,7), (1,7))
@@ -437,5 +441,5 @@ if __name__ == "__main__":
     print("#Move sequence...  ", aichess.pathToTarget)
     print("#Visited sequence...  ", aichess.listVisitedStates)
     print("#Current State...  ", aichess.chess.board.currentStateW)
-    #print("#Checkmate Status White: ", aichess.isCheckMateW(currentStateW))
-    #print("#Checkmate Status Black: ", aichess.isCheckMateB(currentStateB))
+    print("#Checkmate Status White: ", aichess.isCheckMateW(currentStateW))
+    print("#Checkmate Status Black: ", aichess.isCheckMateB(currentStateB))
