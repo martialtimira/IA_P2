@@ -251,11 +251,13 @@ class Aichess():
         self.checkMate = True
         return True
 
-    def utility(self, state):
+    def utilityW(self, state):
         utility = 15.06225774829855           #start with a neutral utility score
         w_king = None
         b_king = None
         w_tower = None
+        b_tower = None
+
         if self.isCheckMateW(state):            #if it's check mate, return the utility score
             return utility
         if self.isCheckMateB(self.getCurrentStateB()):
@@ -269,10 +271,19 @@ class Aichess():
         for piece in self.getCurrentStateB():
             if piece[2] == 12:
                 b_king = piece.copy()
-
+            if piece[2] == 8:
+                b_tower = piece.copy()
         w_king_array = np.array([w_king[0], w_king[1]])         #make arrays of positions of white king
         b_king_array = np.array([b_king[0], b_king[1]])         #black king
         w_tower_array = np.array([w_tower[0], w_tower[1]])      #white tower
+
+        # maybe change this
+        black_tower = self.chess.boardSim.board[b_tower[0]][b_tower[1]]
+
+        if black_tower != None:
+            if black_tower.is_valid_move(self.chess.boardSim, (b_tower[0], b_tower[1]), (w_king[0], w_king[1])):
+                utility -= 10
+        #until here
 
         if w_tower != None:                                     #if White tower isn't taken, check if it's in the same
             if w_tower[0] != b_king[0] and w_tower[1] != b_king[1]: #row or column as the black king, and if it isn't
@@ -284,34 +295,40 @@ class Aichess():
             if b_king[1] != 0 and b_king[1] != 7:
                 utility -= min(b_king[1], (7 - b_king[1])) * 2
 
-        utility -= np.linalg.norm(w_king_array - b_king_array)* 10    #subtract the euclidean distance between the 2 kings
+        dist = np.linalg.norm(w_king_array - b_king_array)
+
+        if dist == 1.0:
+            utility -= 10
+        else:
+            utility -= dist * 10    #subtract the euclidean distance between the 2 kings
+
         return utility
 
     #MiniMax, max_value and min_value for white pieces
-    def miniMax(self, mystate, depth):
+    def miniMaxW(self, mystate, depth):
         self.depthMax = depth
         move = ()
         if self.isCheckMateW(mystate):
             return move
 
-        v, state_list = self.max_value(mystate, 0)
+        v, state_list = self.max_valueW(mystate, 0)
         if len(state_list) == 2:
             start, to, piece = self.getMoveFromStates(self.currentStateW, state_list[1])
             move = (start, to)
 
         return move
 
-    def max_value(self, mystate, depth):
+    def max_valueW(self, mystate, depth):
         return_state = [mystate]
         initial_list = [mystate]
         if depth > self.depthMax or self.isCheckMateW(mystate):
-            return self.utility(mystate), return_state
+            return self.utilityW(mystate), return_state
         v = -sys.maxsize
         for state in self.getListNextStatesW(mystate):
             start, to, piece_moved = self.getMoveFromStates(mystate, state)
             pieceThere = self.chess.boardSim.board[to[0]][to[1]]
             self.chess.moveSim(start, to, False)
-            t, state_list = self.min_value(state, depth+1)
+            t, state_list = self.min_valueW(state, depth + 1)
             #v = max(v, t)
             if t > v:
                 v = t
@@ -330,19 +347,146 @@ class Aichess():
 
         return v, return_state
 
-    def min_value(self, mystate, depth):
+    def min_valueW(self, mystate, depth):
         return_state = [mystate]
         initial_list = [mystate]
         currentState = self.getCurrentStateB().copy()
         if depth > self.depthMax or self.isCheckMateW(mystate):
-            return self.utility(mystate), return_state
+            return self.utilityW(mystate), return_state
         v = sys.maxsize
 
         for state in self.getListNextStatesB(currentState):
             start, to, piece_moved = self.getMoveFromStates(currentState, state)
             pieceThere = self.chess.boardSim.board[to[0]][to[1]]
             self.chess.moveSim(start, to, False)
-            t, state_list = self.max_value(self.getCurrentStateW(), depth + 1)
+            t, state_list = self.max_valueW(self.getCurrentStateW(), depth + 1)
+            v = min(v, t)
+            if t < v:
+                v = t
+                return_state = initial_list + state_list
+            self.chess.moveSim(to, start, False)
+            if pieceThere != None:
+                if pieceThere.name == 'R' and not pieceThere.color:
+                    self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(False)
+                if pieceThere.name == 'K' and not pieceThere.color:
+                    self.chess.boardSim.board[to[0]][to[1]] = piece.King(False)
+                if pieceThere.name == 'R' and pieceThere.color:
+                    self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(True)
+                if pieceThere.name == 'K' and pieceThere.color:
+                    self.chess.boardSim.board[to[0]][to[1]] = piece.King(True)
+        return v, return_state
+
+    #Utility Mini-Max, Min-Value and Max-Value for black pieces
+
+    def utilityB(self, state):
+        utility = 15.06225774829855           #start with a neutral utility score
+        b_king = None
+        w_king = None
+        b_tower = None
+        w_tower = None
+
+        if self.isCheckMateB(state):            #if it's check mate, return the utility score
+            return utility
+        if self.isCheckMateW(self.getCurrentStateW()):
+            return -utility
+
+        for piece in state:
+            if piece[2] == 12:
+                w_king = piece.copy()
+            if piece[2] == 8:
+                b_tower = piece.copy()
+        for piece in self.getCurrentStateW():
+            if piece[2] == 6:
+                b_king = piece.copy()
+            if piece[2] == 2:
+                w_tower = piece.copy()
+
+        w_king_array = np.array([w_king[0], w_king[1]])         #make arrays of positions of black king
+        b_king_array = np.array([b_king[0], b_king[1]])         #white king
+        b_tower_array = np.array([b_tower[0], b_tower[1]])      #white tower
+
+        #maybe change this
+        white_tower = self.chess.boardSim.board[w_tower[0]][w_tower[1]]
+
+        if white_tower != None:
+            if white_tower.is_valid_move(self.chess.boardSim, (w_tower[0], w_tower[1]), (b_king[0], b_king[1])):
+                utility -= 10
+        #until here
+
+        if b_tower != None:                                     #if black tower isn't taken, check if it's in the same
+            if b_tower[0] != b_king[0] and b_tower[1] != b_king[1]: #row or column as the white king, and if it isn't
+                utility -= np.linalg.norm(b_tower_array - w_king_array) / 10 #subtract its euclidean distance to the utility score
+
+        if (w_king[0] != 0 and w_king[0] != 7) and (w_king[1] != 0 and w_king[1] != 7): #If the white king isn't on an edge of the board
+            if w_king[0] != 0 and w_king[0] != 7:                                       #Subtract the minimum between the 2 axis distances to the nearest edge
+                utility -= min(w_king[0], (7 - w_king[0])) * 2
+            if w_king[1] != 0 and w_king[1] != 7:
+                utility -= min(w_king[1], (7 - w_king[1])) * 2
+
+        dist = np.linalg.norm(b_king_array - w_king_array)
+
+        if dist == 1.0:
+            utility -= 10
+        else:
+            utility -= dist * 10    #subtract the euclidean distance between the 2 kings
+        return utility
+
+    def miniMaxB(self, mystate, depth):
+        self.depthMax = depth
+        move = ()
+        if self.isCheckMateB(mystate):
+            return move
+
+        v, state_list = self.max_valueB(mystate, 0)
+        if len(state_list) == 2:
+            start, to, piece = self.getMoveFromStates(self.currentStateB, state_list[1])
+            move = (start, to)
+
+        return move
+
+    def max_valueB(self, mystate, depth):
+        return_state = [mystate]
+        initial_list = [mystate]
+        if depth > self.depthMax or self.isCheckMateB(mystate):
+            return self.utilityB(mystate), return_state
+        v = -sys.maxsize
+        for state in self.getListNextStatesB(mystate):
+            start, to, piece_moved = self.getMoveFromStates(mystate, state)
+            pieceThere = self.chess.boardSim.board[to[0]][to[1]]
+            self.chess.moveSim(start, to, False)
+            t, state_list = self.min_valueB(state, depth + 1)
+            #v = max(v, t)
+            if t > v:
+                v = t
+                return_state = initial_list + state_list
+
+            self.chess.moveSim(to, start, False)
+            if pieceThere != None:
+                if pieceThere.name == 'R' and not pieceThere.color:
+                    self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(False)
+                if pieceThere.name == 'K' and not pieceThere.color:
+                    self.chess.boardSim.board[to[0]][to[1]] = piece.King(False)
+                if pieceThere.name == 'R' and pieceThere.color:
+                    self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(True)
+                if pieceThere.name == 'K' and pieceThere.color:
+                    self.chess.boardSim.board[to[0]][to[1]] = piece.King(True)
+
+        return v, return_state
+
+    def min_valueB(self, mystate, depth):
+        return_state = [mystate]
+        initial_list = [mystate]
+        currentState = self.getCurrentStateW().copy()
+
+        if depth > self.depthMax or self.isCheckMateB(mystate):
+            return self.utilityB(mystate), return_state
+        v = sys.maxsize
+
+        for state in self.getListNextStatesW(currentState):
+            start, to, piece_moved = self.getMoveFromStates(currentState, state)
+            pieceThere = self.chess.boardSim.board[to[0]][to[1]]
+            self.chess.moveSim(start, to, False)
+            t, state_list = self.max_valueB(self.getCurrentStateB(), depth + 1)
             v = min(v, t)
             if t < v:
                 v = t
@@ -424,13 +568,23 @@ if __name__ == "__main__":
     # starting from current state find the end state (check mate) - recursive function
     # aichess.chess.boardSim.listVisitedStates = []
     # find the shortest path, initial depth 0
-    depth = 3
+    depth = 1
     move_number = 0
-    while not aichess.isCheckMateW(aichess.getCurrentStateW()):
-        currentStateW = aichess.getCurrentStateW()
-        nextMove = aichess.miniMax(currentStateW, depth)
+
+    #while not aichess.isCheckMateW(aichess.getCurrentStateW()):
+    #    currentStateW = aichess.getCurrentStateW()
+    #    nextMove = aichess.miniMaxW(currentStateW, depth)
+    #   aichess.chess.moveSim(nextMove[0],nextMove[1])
+    #    move_number += 1
+
+    while not (aichess.isCheckMateB(aichess.getCurrentStateB()) or aichess.isCheckMateW(aichess.getCurrentStateW())):
+        nextMove = aichess.miniMaxW(aichess.getCurrentStateW(), depth)
+        aichess.chess.moveSim(nextMove[0], nextMove[1])
+        aichess.chess.boardSim.print_board()
+        nextMove = aichess.miniMaxB(aichess.getCurrentStateB(), depth)
         aichess.chess.moveSim(nextMove[0],nextMove[1])
-        move_number += 1
+        aichess.chess.boardSim.print_board()
+        move_number += 2
 
     #print("U: ", aichess.utility(currentStateW))
     #print(aichess.getCurrentStateB())
