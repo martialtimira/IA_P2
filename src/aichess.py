@@ -261,7 +261,7 @@ class Aichess():
         if self.isCheckMateW(state):            #if it's check mate, return the utility score
             return utility
         if self.isCheckMateB(self.getCurrentStateB()):
-            return -utility
+            return (-utility - 20)
 
         for piece in state:
             if piece[2] == 6:
@@ -279,6 +279,13 @@ class Aichess():
 
         # maybe change this
         black_tower = self.chess.boardSim.board[b_tower[0]][b_tower[1]]
+
+        black_king = self.chess.boardSim.board[b_king[0]][b_king[1]]
+
+        if black_king != None:
+            if (black_king.is_valid_move(self.chess.boardSim, (b_king[0], b_king[1]), (w_tower[0], w_tower[1])) or
+            black_king.is_valid_move(self.chess.boardSim, (b_king[0], b_king[1]), (w_king[0], w_king[1]))):
+                utility -= 10
 
         if black_tower != None:
             if black_tower.is_valid_move(self.chess.boardSim, (b_tower[0], b_tower[1]), (w_king[0], w_king[1])):
@@ -407,6 +414,13 @@ class Aichess():
 
         #maybe change this
         white_tower = self.chess.boardSim.board[w_tower[0]][w_tower[1]]
+
+        white_king = self.chess.boardSim.board[w_king[0]][w_king[1]]
+
+        if white_king != None:
+            if (white_king.is_valid_move(self.chess.boardSim, (w_king[0], w_king[1]), (b_tower[0], b_tower[1])) or
+                white_king.is_valid_move(self.chess.boardSim, (w_king[0], w_king[1]), (b_king[0], b_king[1]))):
+                utility -= 10
 
         if white_tower != None:
             if white_tower.is_valid_move(self.chess.boardSim, (w_tower[0], w_tower[1]), (b_king[0], b_king[1])):
@@ -581,10 +595,11 @@ if __name__ == "__main__":
         nextMove = aichess.miniMaxW(aichess.getCurrentStateW(), depth)
         aichess.chess.moveSim(nextMove[0], nextMove[1])
         aichess.chess.boardSim.print_board()
+        move_number += 1
         nextMove = aichess.miniMaxB(aichess.getCurrentStateB(), depth)
         aichess.chess.moveSim(nextMove[0],nextMove[1])
         aichess.chess.boardSim.print_board()
-        move_number += 2
+        move_number += 1
 
     #print("U: ", aichess.utility(currentStateW))
     #print(aichess.getCurrentStateB())
@@ -596,5 +611,5 @@ if __name__ == "__main__":
     print("#Move sequence...  ", aichess.pathToTarget)
     print("#Visited sequence...  ", aichess.listVisitedStates)
     print("#Current State...  ", aichess.chess.board.currentStateW)
-    print("#Checkmate Status White: ", aichess.isCheckMateW(currentStateW))
-    print("#Checkmate Status Black: ", aichess.isCheckMateB(currentStateB))
+    print("#Checkmate Status White: ", aichess.isCheckMateW(aichess.getCurrentStateW()))
+    print("#Checkmate Status Black: ", aichess.isCheckMateB(aichess.getCurrentStateB()))
