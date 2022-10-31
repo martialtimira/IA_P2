@@ -295,12 +295,14 @@ class Aichess():
         if w_tower != None:                                     #if White tower isn't taken, check if it's in the same
             if w_tower[0] != b_king[0] and w_tower[1] != b_king[1]: #row or column as the black king, and if it isn't
                 utility -= np.linalg.norm(w_tower_array - b_king_array) / 10 #subtract its euclidean distance to the utility score
+            #if w_tower[0] == b_king[0] or w_tower[1] == b_king[1]:
+                #utility += np.linalg.norm(w_tower_array - b_king_array) / 5
 
         if (b_king[0] != 0 and b_king[0] != 7) and (b_king[1] != 0 and b_king[1] != 7): #If the black king isn't on an edge of the board
             if b_king[0] != 0 and b_king[0] != 7:                                       #Subtract the minimum between the 2 axis distances to the nearest edge
-                utility -= min(b_king[0], (7 - b_king[0])) * 2
+                utility -= min(b_king[0], (7 - b_king[0])) * 4
             if b_king[1] != 0 and b_king[1] != 7:
-                utility -= min(b_king[1], (7 - b_king[1])) * 2
+                utility -= min(b_king[1], (7 - b_king[1])) * 4
 
         dist = np.linalg.norm(w_king_array - b_king_array)
 
@@ -428,14 +430,16 @@ class Aichess():
         #until here
 
         if b_tower != None:                                     #if black tower isn't taken, check if it's in the same
-            if b_tower[0] != b_king[0] and b_tower[1] != b_king[1]: #row or column as the white king, and if it isn't
+            if b_tower[0] != w_king[0] and b_tower[1] != w_king[1]: #row or column as the white king, and if it isn't
                 utility -= np.linalg.norm(b_tower_array - w_king_array) / 10 #subtract its euclidean distance to the utility score
+            #if b_tower[0] == w_king[0] or w_tower[1] == w_king[1]:
+                #utility += np.linalg.norm(b_tower_array - w_king_array) / 5
 
         if (w_king[0] != 0 and w_king[0] != 7) and (w_king[1] != 0 and w_king[1] != 7): #If the white king isn't on an edge of the board
             if w_king[0] != 0 and w_king[0] != 7:                                       #Subtract the minimum between the 2 axis distances to the nearest edge
-                utility -= min(w_king[0], (7 - w_king[0])) * 2
+                utility -= min(w_king[0], (7 - w_king[0])) * 4
             if w_king[1] != 0 and w_king[1] != 7:
-                utility -= min(w_king[1], (7 - w_king[1])) * 2
+                utility -= min(w_king[1], (7 - w_king[1])) * 4
 
         dist = np.linalg.norm(b_king_array - w_king_array)
 
