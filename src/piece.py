@@ -145,7 +145,7 @@ def check_updown_castle(color, board, start, to):
         
     return True
 
-def check_updown(board, start, to):
+def check_updown(board, start, to, verbose = True):
     
     """
     Checks if there are no pieces along the vertical or horizontal path
@@ -166,8 +166,9 @@ def check_updown(board, start, to):
 
         for i in range(smaller_y + 1, bigger_y):
             if board.board[start[0]][i] != None:
-                print(blocked_path)
-                print("At: " + str(start[0]), i)
+                if verbose:
+                    print(blocked_path)
+                    print("At: " + str(start[0]), i)
                 return False
         return True
     else:
@@ -176,7 +177,8 @@ def check_updown(board, start, to):
 
         for i in range(smaller_x + 1, bigger_x):
             if board.board[i][start[1]] != None:
-                print(blocked_path)
+                if verbose:
+                    print(blocked_path)
                 return False
         return True
 
@@ -241,7 +243,7 @@ class Rook(Piece):
 
     def is_valid_move(self, board, start, to, verbose = False):
         if start[0] == to[0] or start[1] == to[1]:
-            return check_updown(board, start, to)
+            return check_updown(board, start, to, verbose = verbose)
         if verbose:
             print(incorrect_path)
         return False
@@ -325,10 +327,11 @@ class King(Piece):
             if not knight_attack: 
                 return False
 
-            diags = check_diag_castle(self.color, board, (7, 5), (2, 0)) and \
-                check_diag_castle(self.color, board, (7, 6), (1, 0)) and \
-                check_diag_castle(self.color, board, (7, 5), (5, 7)) and \
-                check_diag_castle(self.color, board, (7, 6), (6, 7))
+            diags = False
+            #diags = check_diag_castle(self.color, board, (7, 5), (2, 0)) and \
+                #check_diag_castle(self.color, board, (7, 6), (1, 0)) and \
+                #check_diag_castle(self.color, board, (7, 5), (5, 7)) and \
+                #check_diag_castle(self.color, board, (7, 6), (6, 7))
             if not diags:
                 return False
 
@@ -356,10 +359,11 @@ class King(Piece):
             if not knight_attack: 
                 return False
 
-            diags = check_diag_castle(self.color, board, (7, 2), (5, 0)) and \
-                check_diag_castle(self.color, board, (7, 3), (4, 0)) and \
-                check_diag_castle(self.color, board, (7, 2), (2, 7)) and \
-                check_diag_castle(self.color, board, (7, 3), (3, 7))
+            diags = False
+            #diags = check_diag_castle(self.color, board, (7, 2), (5, 0)) and \
+                #check_diag_castle(self.color, board, (7, 3), (4, 0)) and \
+                #check_diag_castle(self.color, board, (7, 2), (2, 7)) and \
+                #check_diag_castle(self.color, board, (7, 3), (3, 7))
             if not diags:
                 return False
 
@@ -386,10 +390,11 @@ class King(Piece):
             if not knight_attack: 
                 return False
 
-            diags = check_diag_castle(self.color, board, (0, 5), (5, 0)) and \
-                check_diag_castle(self.color, board, (0, 6), (6, 0)) and \
-                check_diag_castle(self.color, board, (0, 5), (2, 7)) and \
-                check_diag_castle(self.color, board, (0, 6), (1, 7))
+            diags = False
+            #diags = check_diag_castle(self.color, board, (0, 5), (5, 0)) and \
+                #check_diag_castle(self.color, board, (0, 6), (6, 0)) and \
+                #check_diag_castle(self.color, board, (0, 5), (2, 7)) and \
+                #check_diag_castle(self.color, board, (0, 6), (1, 7))
             if not diags:
                 return False
 
@@ -418,10 +423,11 @@ class King(Piece):
             if not knight_attack: 
                 return False
 
-            diags = check_diag_castle(self.color, board, (0, 2), (5, 7)) and \
-                check_diag_castle(self.color, board, (0, 3), (4, 7)) and \
-                check_diag_castle(self.color, board, (0, 2), (2, 0)) and \
-                check_diag_castle(self.color, board, (0, 3), (3, 0))
+            diags = False
+            #diags = check_diag_castle(self.color, board, (0, 2), (5, 7)) and \
+                #check_diag_castle(self.color, board, (0, 3), (4, 7)) and \
+                #check_diag_castle(self.color, board, (0, 2), (2, 0)) and \
+                #check_diag_castle(self.color, board, (0, 3), (3, 0))
             if not diags:
                 return False
 
