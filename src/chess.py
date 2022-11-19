@@ -133,8 +133,27 @@ class Chess():
             if self.boardSim.board[to[0]][to[1]]:
                 if verbose:
                     print(str(self.boardSim.board[to[0]][to[1]]) + " taken.")
+
+                ##HERE DELETE FROM STATE (CHECK WHAT PIECE IS AT piece = self.boardSim.board[to[0]][to[1]],
+                # CHECK IF ITS BLACK OR WHITE, THEN PROCEED TO DELETE FROM THAT STATE (ALSO TWEAK METHODS MINVALUE AND
+                # MAXVALUE ON THE 4 "UNDO" IFS SO IT RE-ADDS THEM TO THE CORRECT CURRENTSTATES WHEN UNDOING A MOVE.
+                #ASK TEACHER
                 # Special logic for ghost piece, deletes the actual pawn that is not in the `to`
                 # coordinate from en passant
+                taken_piece = self.boardSim.board[to[0]][to[1]]
+                if taken_piece.name == 'R' and not taken_piece.color:
+                    if [to[0], to[1], 8] in self.boardSim.currentStateB:
+                        self.boardSim.currentStateB.remove([to[0], to[1], 8])
+                if taken_piece.name == 'K' and not taken_piece.color:
+                    if [to[0], to[1], 12] in self.boardSim.currentStateB:
+                        self.boardSim.currentStateB.remove([to[0], to[1], 12])
+                if taken_piece.name == 'R' and taken_piece.color:
+                    if [to[0], to[1], 2] in self.boardSim.currentStateW:
+                        self.boardSim.currentStateW.remove([to[0], to[1], 2])
+                if taken_piece.name == 'K' and taken_piece.color:
+                    if [to[0], to[1], 6] in self.boardSim.currentStateW:
+                        self.boardSim.currentStateW.remove([to[0], to[1], 6])
+
                 if self.boardSim.board[to[0]][to[1]].name == "GP":
 
                     if self.turn:
