@@ -89,7 +89,6 @@ class Chess():
         
         precondition: `start` and `to` are valid positions on the board
         """
-
         if self.boardSim.board[start[0]][start[1]] == None:
             if verbose:
                 print("There is no piece to move at the start place")

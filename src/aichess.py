@@ -273,16 +273,19 @@ class Aichess():
                 b_king = piece.copy()
             if piece[2] == 8:
                 b_tower = piece.copy()
-        w_king_array = np.array([w_king[0], w_king[1]])         #make arrays of positions of white king
-        b_king_array = np.array([b_king[0], b_king[1]])         #black king
-        w_tower_array = np.array([w_tower[0], w_tower[1]])      #white tower
+        if w_king != None:
+            w_king_array = np.array([w_king[0], w_king[1]])         #make arrays of positions of white king
+        if b_king != None:
+            b_king_array = np.array([b_king[0], b_king[1]])         #black king
+        if w_tower != None:
+            w_tower_array = np.array([w_tower[0], w_tower[1]])      #white tower
 
         # maybe change this
         black_tower = self.chess.boardSim.board[b_tower[0]][b_tower[1]]
 
         black_king = self.chess.boardSim.board[b_king[0]][b_king[1]]
 
-        if black_king != None:
+        if black_king != None and w_tower != None:
             if (black_king.is_valid_move(self.chess.boardSim, (b_king[0], b_king[1]), (w_tower[0], w_tower[1])) or
             black_king.is_valid_move(self.chess.boardSim, (b_king[0], b_king[1]), (w_king[0], w_king[1]))):
                 utility -= 10
@@ -347,20 +350,13 @@ class Aichess():
             if pieceThere != None:
                 if pieceThere.name == 'R' and not pieceThere.color:
                     self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(False)
-                    if [to[0], to[1], 8] not in self.chess.boardSim.currentStateB:
-                        self.chess.boardSim.currentStateB.append([to[0], to[1], 8])
                 if pieceThere.name == 'K' and not pieceThere.color:
                     self.chess.boardSim.board[to[0]][to[1]] = piece.King(False)
-                    if [to[0], to[1], 12] not in self.chess.boardSim.currentStateB:
-                        self.chess.boardSim.currentStateB.append([to[0], to[1], 12])
                 if pieceThere.name == 'R' and pieceThere.color:
                     self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(True)
-                    if [to[0], to[1], 2] not in self.chess.boardSim.currentStateW:
-                        self.chess.boardSim.currentStateB.append([to[0], to[1], 2])
                 if pieceThere.name == 'K' and pieceThere.color:
                     self.chess.boardSim.board[to[0]][to[1]] = piece.King(True)
-                    if [to[0], to[1], 6] not in self.chess.boardSim.currentStateW:
-                        self.chess.boardSim.currentStateB.append([to[0], to[1], 6])
+            self.refresh_states()
 
         return v, return_state
 
@@ -385,20 +381,13 @@ class Aichess():
             if pieceThere != None:
                 if pieceThere.name == 'R' and not pieceThere.color:
                     self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(False)
-                    if [to[0], to[1], 8] not in self.chess.boardSim.currentStateB:
-                        self.chess.boardSim.currentStateB.append([to[0], to[1], 8])
                 if pieceThere.name == 'K' and not pieceThere.color:
                     self.chess.boardSim.board[to[0]][to[1]] = piece.King(False)
-                    if [to[0], to[1], 12] not in self.chess.boardSim.currentStateB:
-                        self.chess.boardSim.currentStateB.append([to[0], to[1], 12])
                 if pieceThere.name == 'R' and pieceThere.color:
                     self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(True)
-                    if [to[0], to[1], 2] not in self.chess.boardSim.currentStateW:
-                        self.chess.boardSim.currentStateB.append([to[0], to[1], 2])
                 if pieceThere.name == 'K' and pieceThere.color:
                     self.chess.boardSim.board[to[0]][to[1]] = piece.King(True)
-                    if [to[0], to[1], 6] not in self.chess.boardSim.currentStateW:
-                        self.chess.boardSim.currentStateB.append([to[0], to[1], 6])
+            self.refresh_states()
         return v, return_state
 
     #Utility Mini-Max, Min-Value and Max-Value for black pieces
@@ -435,7 +424,7 @@ class Aichess():
 
         white_king = self.chess.boardSim.board[w_king[0]][w_king[1]]
 
-        if white_king != None:
+        if white_king != None and b_tower != None:
             if (white_king.is_valid_move(self.chess.boardSim, (w_king[0], w_king[1]), (b_tower[0], b_tower[1])) or
                 white_king.is_valid_move(self.chess.boardSim, (w_king[0], w_king[1]), (b_king[0], b_king[1]))):
                 utility -= 10
@@ -498,20 +487,13 @@ class Aichess():
             if pieceThere != None:
                 if pieceThere.name == 'R' and not pieceThere.color:
                     self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(False)
-                    if [to[0], to[1], 8] not in self.chess.boardSim.currentStateB:
-                        self.chess.boardSim.currentStateB.append([to[0], to[1], 8])
                 if pieceThere.name == 'K' and not pieceThere.color:
                     self.chess.boardSim.board[to[0]][to[1]] = piece.King(False)
-                    if [to[0], to[1], 12] not in self.chess.boardSim.currentStateB:
-                        self.chess.boardSim.currentStateB.append([to[0], to[1], 12])
                 if pieceThere.name == 'R' and pieceThere.color:
                     self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(True)
-                    if [to[0], to[1], 2] not in self.chess.boardSim.currentStateW:
-                        self.chess.boardSim.currentStateB.append([to[0], to[1], 2])
                 if pieceThere.name == 'K' and pieceThere.color:
                     self.chess.boardSim.board[to[0]][to[1]] = piece.King(True)
-                    if [to[0], to[1], 6] not in self.chess.boardSim.currentStateW:
-                        self.chess.boardSim.currentStateB.append([to[0], to[1], 6])
+            self.refresh_states()
 
         return v, return_state
 
@@ -537,21 +519,33 @@ class Aichess():
             if pieceThere != None:
                 if pieceThere.name == 'R' and not pieceThere.color:
                     self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(False)
-                    if [to[0], to[1], 8] not in self.chess.boardSim.currentStateB:
-                        self.chess.boardSim.currentStateB.append([to[0], to[1], 8])
                 if pieceThere.name == 'K' and not pieceThere.color:
                     self.chess.boardSim.board[to[0]][to[1]] = piece.King(False)
-                    if [to[0], to[1], 12] not in self.chess.boardSim.currentStateB:
-                        self.chess.boardSim.currentStateB.append([to[0], to[1], 12])
                 if pieceThere.name == 'R' and pieceThere.color:
                     self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(True)
-                    if [to[0], to[1], 2] not in self.chess.boardSim.currentStateW:
-                        self.chess.boardSim.currentStateB.append([to[0], to[1], 2])
                 if pieceThere.name == 'K' and pieceThere.color:
                     self.chess.boardSim.board[to[0]][to[1]] = piece.King(True)
-                    if [to[0], to[1], 6] not in self.chess.boardSim.currentStateW:
-                        self.chess.boardSim.currentStateB.append([to[0], to[1], 6])
+            self.refresh_states()
         return v, return_state
+
+    def refresh_states(self):
+        self.chess.boardSim.currentStateB.clear()
+        self.chess.boardSim.currentStateW.clear()
+
+        for row in range(len(self.chess.boardSim.board)):
+            for column in range(len(self.chess.boardSim.board[row])):
+                if self.chess.boardSim.board[row][column] != None:
+                    piece = self.chess.boardSim.board[row][column]
+                    if piece.color:
+                        if piece.name == 'K':
+                            self.chess.boardSim.currentStateW.append([row, column, 6])
+                        if piece.name == 'R':
+                            self.chess.boardSim.currentStateW.append([row, column, 2])
+                    else:
+                        if piece.name == 'K':
+                            self.chess.boardSim.currentStateB.append([row, column, 12])
+                        if piece.name == 'R':
+                            self.chess.boardSim.currentStateB.append([row, column, 8])
 
 def translate(s):
     """
@@ -631,15 +625,19 @@ if __name__ == "__main__":
         nextMove = aichess.miniMaxW(aichess.getCurrentStateW(), depth)
         aichess.chess.moveSim(nextMove[0], nextMove[1])
         aichess.chess.boardSim.print_board()
+        print("WHITESTATE: ", aichess.getCurrentStateW())
+        print("BLACKSTATE: ", aichess.getCurrentStateB())
         move_number += 1
         nextMove = aichess.miniMaxB(aichess.getCurrentStateB(), depth)
         aichess.chess.moveSim(nextMove[0],nextMove[1])
         aichess.chess.boardSim.print_board()
+        print("WHITESTATE: ", aichess.getCurrentStateW())
+        print("BLACKSTATE: ", aichess.getCurrentStateB())
         move_number += 1
 
     #aichess.chess.moveSim((7,7), (0,7))
-    #print("WHITESTATE: ", aichess.getCurrentStateW())
-    #print("BLACKSTATE: ", aichess.getCurrentStateB())
+    print("WHITESTATE: ", aichess.getCurrentStateW())
+    print("BLACKSTATE: ", aichess.getCurrentStateB())
 
     aichess.chess.boardSim.print_board()
     print("#Moves Performed: ", move_number)
