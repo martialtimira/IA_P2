@@ -262,6 +262,7 @@ class Aichess():
         self.checkMate = True
         return True
 
+    #FIND A GOOD UTILITY FUNCTION
     def utilityW(self, state):
         utility = 0
         white_score = 0
@@ -294,7 +295,7 @@ class Aichess():
 
         v, state_list = self.max_valueW(mystate, 0)
         if len(state_list) == 2:
-            print("SL: ", state_list)
+            print("V: ", v)
             start, to, piece = self.getMoveFromStates(self.currentStateW, state_list)
             move = (start, to)
 
