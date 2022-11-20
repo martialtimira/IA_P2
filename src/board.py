@@ -41,7 +41,7 @@ class Board():
         Initializes the board per standard chess rules
         """
         #PREGUNTAR: caballos es 'H' aqui pero 'N' en Piece.py???
-        self.listNames = ['P', 'R', 'H', 'B', 'Q', 'K', 'P', 'R', 'H', 'B', 'Q', 'K']
+        self.listNames = ['P', 'R', 'H', 'B', 'Q', 'K', 'P', ('\033[94m' + 'R' + '\033[0m'), 'H', 'B', 'Q', ('\033[94m' + 'K' + '\033[0m')]
 
         self.listSuccessorStatesW = []
         self.listNextStatesW = []
@@ -253,17 +253,15 @@ class Board():
                         listPotentialNextStates.append([ix, iy, 8])
 
                         # check positions are not occupied - so far cannot kill pieces
-                listPotentialNextStates
+
                 for k in range(len(listPotentialNextStates)):
 
                     pos = listPotentialNextStates[k].copy()
                     pos[2] = 12
-                    overlapping = False
-                    if pos in self.currentStateW:
-                        overlapping = True
+
 
                     if listPotentialNextStates[k] not in listOtherPieces and listPotentialNextStates[
-                        k] and not overlapping:
+                        k] :
                         self.listSuccessorStatesB.append(listPotentialNextStates[k])
 
 
@@ -487,7 +485,15 @@ class Board():
 
         # for duplicates
         newList = self.listNextStatesB.copy
+        nextStatesCopy = self.listNextStatesB.copy()
         newListNP = np.array(newList)
+        for state in self.listNextStatesB:
+            for piece in state:
+                for otherpiece in state:
+                    if piece[0] == otherpiece[0] and piece[1] == otherpiece[1] and piece[2] != otherpiece[2]:
+                        if state in nextStatesCopy:
+                            nextStatesCopy.remove(state)
+        self.listNextStatesB = nextStatesCopy
 
         # print("list nexts",self.listNextStates)
 
@@ -599,17 +605,13 @@ class Board():
                         listPotentialNextStates.append([ix, iy, 2])
 
                         # check positions are not occupied - so far cannot kill pieces
-                listPotentialNextStates
                 for k in range(len(listPotentialNextStates)):
 
                     pos = listPotentialNextStates[k].copy()
                     pos[2] = 12
-                    overlapping = False
-                    if pos in self.currentStateB:
-                        overlapping = True
 
                     if listPotentialNextStates[k] not in listOtherPieces and listPotentialNextStates[
-                        k] and not overlapping:
+                        k]:
                         self.listSuccessorStatesW.append(listPotentialNextStates[k])
 
 
@@ -831,7 +833,16 @@ class Board():
 
         # for duplicates
         newList = self.listNextStatesW.copy
+        nextStatesCopy = self.listNextStatesW.copy()
         newListNP = np.array(newList)
+        for state in self.listNextStatesW:
+            for piece in state:
+                for otherpiece in state:
+                    if piece[0] == otherpiece[0] and piece[1] == otherpiece[1] and piece[2] != otherpiece[2]:
+                        if state in nextStatesCopy:
+                            nextStatesCopy.remove(state)
+        self.listNextStatesW = nextStatesCopy
+
 
         # print("list nexts",self.listNextStates)
 
