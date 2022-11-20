@@ -489,7 +489,15 @@ class Board():
 
         # for duplicates
         newList = self.listNextStatesB.copy
+        nextStatesCopy = self.listNextStatesB.copy()
         newListNP = np.array(newList)
+        for state in self.listNextStatesB:
+            for piece in state:
+                for otherpiece in state:
+                    if piece[0] == otherpiece[0] and piece[1] == otherpiece[1] and piece[2] != otherpiece[2]:
+                        if state in nextStatesCopy:
+                            nextStatesCopy.remove(state)
+        self.listNextStatesB = nextStatesCopy
 
         # print("list nexts",self.listNextStates)
 
@@ -833,7 +841,16 @@ class Board():
 
         # for duplicates
         newList = self.listNextStatesW.copy
+        nextStatesCopy = self.listNextStatesW.copy()
         newListNP = np.array(newList)
+        for state in self.listNextStatesW:
+            for piece in state:
+                for otherpiece in state:
+                    if piece[0] == otherpiece[0] and piece[1] == otherpiece[1] and piece[2] != otherpiece[2]:
+                        if state in nextStatesCopy:
+                            nextStatesCopy.remove(state)
+        self.listNextStatesW = nextStatesCopy
+
 
         # print("list nexts",self.listNextStates)
 
