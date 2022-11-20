@@ -255,17 +255,15 @@ class Board():
                         listPotentialNextStates.append([ix, iy, 8])
 
                         # check positions are not occupied - so far cannot kill pieces
-                listPotentialNextStates
+
                 for k in range(len(listPotentialNextStates)):
 
                     pos = listPotentialNextStates[k].copy()
                     pos[2] = 12
-                    overlapping = False
-                    if pos in self.currentStateW:
-                        overlapping = True
+
 
                     if listPotentialNextStates[k] not in listOtherPieces and listPotentialNextStates[
-                        k] and not overlapping:
+                        k] :
                         self.listSuccessorStatesB.append(listPotentialNextStates[k])
 
 
@@ -609,17 +607,13 @@ class Board():
                         listPotentialNextStates.append([ix, iy, 2])
 
                         # check positions are not occupied - so far cannot kill pieces
-                listPotentialNextStates
                 for k in range(len(listPotentialNextStates)):
 
                     pos = listPotentialNextStates[k].copy()
                     pos[2] = 12
-                    overlapping = False
-                    if pos in self.currentStateB:
-                        overlapping = True
 
                     if listPotentialNextStates[k] not in listOtherPieces and listPotentialNextStates[
-                        k] and not overlapping:
+                        k]:
                         self.listSuccessorStatesW.append(listPotentialNextStates[k])
 
 
