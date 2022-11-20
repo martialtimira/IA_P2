@@ -302,7 +302,6 @@ class Aichess():
 
     def max_valueW(self, mystate, depth):
         return_state = mystate
-        initial_list = [mystate]
         if depth > self.depthMax or self.isCheckMateW(mystate):
             return self.utilityW(mystate), return_state
         v = -sys.maxsize
@@ -336,7 +335,6 @@ class Aichess():
 
     def min_valueW(self, mystate, depth):
         return_state = mystate
-        initial_list = [mystate]
         currentState = self.getCurrentStateB().copy()
         if depth > self.depthMax or self.isCheckMateW(mystate):
             return self.utilityW(mystate), return_state
@@ -431,7 +429,6 @@ class Aichess():
             utility -= dist * 10    #subtract the euclidean distance between the 2 kings
         return utility
 
-    #FIX TO MATCH THE WHITE VERSION UPDATES
     def miniMaxB(self, mystate, depth):
         self.depthMax = depth
         move = ()
@@ -440,46 +437,45 @@ class Aichess():
 
         v, state_list = self.max_valueB(mystate, 0)
         if len(state_list) == 2:
-            start, to, piece = self.getMoveFromStates(self.currentStateB, state_list[1])
+            start, to, piece = self.getMoveFromStates(self.currentStateB, state_list)
             move = (start, to)
 
         return move
 
-    # FIX TO MATCH THE WHITE VERSION UPDATES
     def max_valueB(self, mystate, depth):
-        return_state = [mystate]
-        initial_list = [mystate]
+        return_state = mystate
         if depth > self.depthMax or self.isCheckMateB(mystate):
             return self.utilityB(mystate), return_state
         v = -sys.maxsize
         for state in self.getListNextStatesB(mystate):
             start, to, piece_moved = self.getMoveFromStates(mystate, state)
             pieceThere = self.chess.boardSim.board[to[0]][to[1]]
-            self.chess.moveSim(start, to, False)
-            t, state_list = self.min_valueB(state, depth + 1)
-            #v = max(v, t)
-            if t > v:
-                v = t
-                return_state = initial_list + state_list
+            pieceToMove = self.chess.boardSim.board[start[0]][start[1]]
+            if pieceToMove != None:
+                if pieceToMove.is_valid_move(self.chess.boardSim, start, to):
+                    self.chess.moveSim(start, to, False)
+                    t, state_list = self.min_valueB(state, depth + 1)
+                    #v = max(v, t)
+                    if t > v:
+                        v = t
+                        return_state = state
 
-            self.chess.moveSim(to, start, False)
-            if pieceThere != None:
-                if pieceThere.name == 'R' and not pieceThere.color:
-                    self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(False)
-                if pieceThere.name == 'K' and not pieceThere.color:
-                    self.chess.boardSim.board[to[0]][to[1]] = piece.King(False)
-                if pieceThere.name == 'R' and pieceThere.color:
-                    self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(True)
-                if pieceThere.name == 'K' and pieceThere.color:
-                    self.chess.boardSim.board[to[0]][to[1]] = piece.King(True)
-            self.refresh_states()
+                    self.chess.moveSim(to, start, False)
+                    if pieceThere != None:
+                        if pieceThere.name == 'R' and not pieceThere.color:
+                            self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(False)
+                        if pieceThere.name == 'K' and not pieceThere.color:
+                            self.chess.boardSim.board[to[0]][to[1]] = piece.King(False)
+                        if pieceThere.name == 'R' and pieceThere.color:
+                            self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(True)
+                        if pieceThere.name == 'K' and pieceThere.color:
+                            self.chess.boardSim.board[to[0]][to[1]] = piece.King(True)
+                    self.refresh_states()
 
         return v, return_state
 
-    # FIX TO MATCH THE WHITE VERSION UPDATES
     def min_valueB(self, mystate, depth):
-        return_state = [mystate]
-        initial_list = [mystate]
+        return_state = mystate
         currentState = self.getCurrentStateW().copy()
 
         if depth > self.depthMax or self.isCheckMateB(mystate):
@@ -489,23 +485,26 @@ class Aichess():
         for state in self.getListNextStatesW(currentState):
             start, to, piece_moved = self.getMoveFromStates(currentState, state)
             pieceThere = self.chess.boardSim.board[to[0]][to[1]]
-            self.chess.moveSim(start, to, False)
-            t, state_list = self.max_valueB(self.getCurrentStateB(), depth + 1)
-            v = min(v, t)
-            if t < v:
-                v = t
-                return_state = initial_list + state_list
-            self.chess.moveSim(to, start, False)
-            if pieceThere != None:
-                if pieceThere.name == 'R' and not pieceThere.color:
-                    self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(False)
-                if pieceThere.name == 'K' and not pieceThere.color:
-                    self.chess.boardSim.board[to[0]][to[1]] = piece.King(False)
-                if pieceThere.name == 'R' and pieceThere.color:
-                    self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(True)
-                if pieceThere.name == 'K' and pieceThere.color:
-                    self.chess.boardSim.board[to[0]][to[1]] = piece.King(True)
-            self.refresh_states()
+            pieceToMove = self.chess.boardSim.board[start[0]][start[1]]
+            if pieceToMove != None:
+                if pieceToMove.is_valid_move(self.chess.boardSim, start, to):
+                    self.chess.moveSim(start, to, False)
+                    t, state_list = self.max_valueB(self.getCurrentStateB(), depth + 1)
+                    v = min(v, t)
+                    if t < v:
+                        v = t
+                        return_state = state
+                    self.chess.moveSim(to, start, False)
+                    if pieceThere != None:
+                        if pieceThere.name == 'R' and not pieceThere.color:
+                            self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(False)
+                        if pieceThere.name == 'K' and not pieceThere.color:
+                            self.chess.boardSim.board[to[0]][to[1]] = piece.King(False)
+                        if pieceThere.name == 'R' and pieceThere.color:
+                            self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(True)
+                        if pieceThere.name == 'K' and pieceThere.color:
+                            self.chess.boardSim.board[to[0]][to[1]] = piece.King(True)
+                    self.refresh_states()
         return v, return_state
 
     def refresh_states(self):
