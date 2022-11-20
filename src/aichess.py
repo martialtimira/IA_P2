@@ -478,7 +478,7 @@ class Aichess():
         if self.isCheckMateW(mystate):
             return move
 
-        v, state_list = self.max_valueW(mystate, 0)
+        v, state_list = self.max_valueABW(mystate, 0, alpha, beta)
         start, to, piece = self.getMoveFromStates(self.currentStateW, state_list)
         move = (start, to)
 
