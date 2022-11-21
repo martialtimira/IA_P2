@@ -319,11 +319,12 @@ class Aichess():
         position_val = 0
         n_pieces = 50
         d_pieces = 0
+        checkmate = 0
 
         if self.isCheckMateW(state):  # if it's check mate, return the utility score
-            return 100
+            checkmate += 100
         if self.isCheckMateB(self.chess.boardSim.currentStateB):
-            return - 1000
+            checkmate -= 1000
 
         for piece in state:
             if piece[2] == 6:
@@ -337,59 +338,61 @@ class Aichess():
                 b_tower = piece.copy()
 
         if b_tower is None:
-            return self.arrastreW(w_king, b_king, w_tower)
+            return self.arrastreW(w_king, b_king, w_tower, state)
 
         if w_tower is None:
             n_pieces -= 25
 
-        # maybe change this
-        black_tower = self.chess.boardSim.board[b_tower[0]][b_tower[1]]
-        black_king = self.chess.boardSim.board[b_king[0]][b_king[1]]
+        if b_king is not None:
 
-        # El rei negre amenaça
-        if black_king is not None and w_tower is not None:
-            # Torre blanca
-            if black_king.is_valid_move(self.chess.boardSim, (b_king[0], b_king[1]), (w_tower[0], w_tower[1])):
-                d_pieces -= 30
-            # Rei blanc
-            if black_king.is_valid_move(self.chess.boardSim, (b_king[0], b_king[1]), (w_king[0], w_king[1])):
-                d_pieces -= 10
+            # maybe change this
+            black_tower = self.chess.boardSim.board[b_tower[0]][b_tower[1]]
+            black_king = self.chess.boardSim.board[b_king[0]][b_king[1]]
 
-        # La torre negra amenaça
-        if black_tower is not None and w_tower is not None:
-            # Torre blanca
-            if black_tower.is_valid_move(self.chess.boardSim, (b_tower[0], b_tower[1]), (w_king[0], w_king[1])):
-                d_pieces -= 10
-            # Rei blanc
-            if black_tower.is_valid_move(self.chess.boardSim, (b_tower[0], b_tower[1]), (w_tower[0], w_tower[1])):
-                d_pieces -= 50
-        # until here
+            # El rei negre amenaça
+            if black_king is not None and w_tower is not None:
+                # Torre blanca
+                if black_king.is_valid_move(self.chess.boardSim, (b_king[0], b_king[1]), (w_tower[0], w_tower[1])):
+                    d_pieces -= 30
+                # Rei blanc
+                if black_king.is_valid_move(self.chess.boardSim, (b_king[0], b_king[1]), (w_king[0], w_king[1])):
+                    d_pieces -= 10
 
-        # La torre blanca amenaça
-        if w_tower is not None:
-            if w_tower[0] == b_king[0] or w_tower[1] == b_king[1]:
-                d_pieces += 100
+            # La torre negra amenaça
+            if black_tower is not None and w_tower is not None:
+                # Torre blanca
+                if black_tower.is_valid_move(self.chess.boardSim, (b_tower[0], b_tower[1]), (w_king[0], w_king[1])):
+                    d_pieces -= 10
+                # Rei blanc
+                if black_tower.is_valid_move(self.chess.boardSim, (b_tower[0], b_tower[1]), (w_tower[0], w_tower[1])):
+                    d_pieces -= 50
+            # until here
 
-
-        if b_king[0] != 0 and b_king[0] != 7 and b_king[1] != 0 and b_king[1] != 7:
-            t = 7
-            u = 7
-            if b_king[0] != 0 and b_king[0] != 7:  # Subtract the minimum between the 2 axis distances to the nearest edge
-                t = min(b_king[0], (7 - b_king[0]))
-            if b_king[1] != 0 and b_king[1] != 7:
-                u = min(b_king[1], (7 - b_king[1]))
-
-            position_val -= min(t, u) * 4
+            # La torre blanca amenaça
+            if w_tower is not None:
+                if w_tower[0] == b_king[0] or w_tower[1] == b_king[1]:
+                    d_pieces += 100
 
 
-        dist = max(np.abs(w_king[0]-b_king[0]), np.abs(w_king[1]-b_king[1]))
+            if b_king[0] != 0 and b_king[0] != 7 and b_king[1] != 0 and b_king[1] != 7:
+                t = 7
+                u = 7
+                if b_king[0] != 0 and b_king[0] != 7:  # Subtract the minimum between the 2 axis distances to the nearest edge
+                    t = min(b_king[0], (7 - b_king[0]))
+                if b_king[1] != 0 and b_king[1] != 7:
+                    u = min(b_king[1], (7 - b_king[1]))
 
-        if dist == 1:
-            position_val += 1
-        else:
-            position_val -= dist  # subtract the euclidean distance between the 2 kings
+                position_val -= min(t, u) * 4
 
-        return 0.33*position_val + 0.33*n_pieces + 0.33*d_pieces
+
+            dist = max(np.abs(w_king[0]-b_king[0]), np.abs(w_king[1]-b_king[1]))
+
+            if dist == 1:
+                position_val += 1
+            else:
+                position_val -= dist  # subtract the euclidean distance between the 2 kings
+
+        return 0.33*position_val + 0.33*n_pieces + 0.33*d_pieces + checkmate
 
     #MiniMax, max_value and min_value for white pieces
     def miniMaxW(self, mystate, depth):
@@ -406,9 +409,10 @@ class Aichess():
 
     def max_valueW(self, mystate, depth):
         return_state = mystate
-        if depth > self.depthMax or self.isCheckMateW(mystate):
+        if depth >= self.depthMax or self.isCheckMateW(mystate):
             return self.utilityW(mystate), return_state
         v = -sys.maxsize
+        values = []
         nextStateList = self.getListNextStatesW(mystate)
         for state in nextStateList:
             start, to, piece_moved = self.getMoveFromStates(mystate, state)
@@ -419,6 +423,7 @@ class Aichess():
                     if pieceToMove.is_valid_move(self.chess.boardSim, start, to):
                         self.chess.moveSim(start, to, False)
                         t, state_list = self.min_valueW(state, depth + 1)
+                        values.append((state_list, t))
                         #v = max(v, t)
                         if t > v:
                             v = t
@@ -441,7 +446,7 @@ class Aichess():
     def min_valueW(self, mystate, depth):
         return_state = mystate
         currentState = self.getCurrentStateB().copy()
-        if depth > self.depthMax or self.isCheckMateW(mystate):
+        if depth >= self.depthMax or self.isCheckMateW(mystate):
             return self.utilityW(mystate), return_state
         v = sys.maxsize
 
@@ -488,7 +493,7 @@ class Aichess():
         return_state = mystate
         alpha = a
         beta = b
-        if depth > self.depthMax or self.isCheckMateW(mystate):
+        if depth >= self.depthMax or self.isCheckMateW(mystate):
             return self.utilityW(mystate), return_state
         v = -sys.maxsize
         nextStateList = self.getListNextStatesW(mystate)
@@ -528,7 +533,7 @@ class Aichess():
         alpha = a
         beta = b
         currentState = self.getCurrentStateB().copy()
-        if depth > self.depthMax or self.isCheckMateW(mystate):
+        if depth >= self.depthMax or self.isCheckMateW(mystate):
             return self.utilityW(mystate), return_state
         v = sys.maxsize
 
@@ -657,7 +662,7 @@ class Aichess():
 
     def max_valueB(self, mystate, depth):
         return_state = mystate.copy()
-        if depth > self.depthMax or self.isCheckMateB(mystate):
+        if depth >= self.depthMax or self.isCheckMateB(mystate):
             return self.utilityB(mystate), return_state
         v = -sys.maxsize
         for state in self.getListNextStatesB(mystate):
@@ -692,7 +697,7 @@ class Aichess():
         return_state = mystate
         currentState = self.getCurrentStateW().copy()
 
-        if depth > self.depthMax or self.isCheckMateB(mystate):
+        if depth >= self.depthMax or self.isCheckMateB(mystate):
             return self.utilityB(mystate), return_state
         v = sys.maxsize
 
@@ -739,7 +744,7 @@ class Aichess():
         return_state = mystate
         alpha = a
         beta = b
-        if depth > self.depthMax or self.isCheckMateB(mystate):
+        if depth >= self.depthMax or self.isCheckMateB(mystate):
             return self.utilityB(mystate), return_state
         v = -sys.maxsize
         nextStateList = self.getListNextStatesB(mystate)
@@ -779,7 +784,7 @@ class Aichess():
         alpha = a
         beta = b
         currentState = self.getCurrentStateW().copy()
-        if depth > self.depthMax or self.isCheckMateB(mystate):
+        if depth >= self.depthMax or self.isCheckMateB(mystate):
             return self.utilityB(mystate), return_state
         v = sys.maxsize
 
@@ -865,75 +870,87 @@ class Aichess():
                             if piece[0] + i == to[0] and piece[1] + j == to[1]:
                                 return True
 
-    def arrastreW(self, w_king, b_king, w_tower):
-        score = 100
+    def arrastreW(self, w_king, b_king, w_tower, state):
+        bonus = 0
+        penalty = 0
 
-        # No interessa que la torre estigui en linia amb el rei
-        if w_tower[0] == b_king[0] or w_tower[1] == b_king[1]:
-            score -= 25
+        # b_king attacking positions
 
-        # No interessa que la torre estigui a prop del rei
-        for i in range(-1, 2, 2):
-            for j in range(-1, 2, 2):
-                if b_king[0] + i == w_tower[0] and b_king[1] + j == w_tower[1]:
-                    score -= 50
+        if self.isCheckMateW(state):  # if it's check mate, return the utility score
+            bonus += 1000
+        if self.isCheckMateB(self.chess.boardSim.currentStateB):
+            penalty -= 1000
 
-        # Busquem la caixa que forma la torre amb el rei negre dins
-        for i in range(0, 8, 7):
-            for j in range(0, 8, 7):
+        if b_king is None:
+            return -1
 
-                tr = (min(i, w_tower[0]), max(j, w_tower[1]))
-                bl = (max(i, w_tower[0]), min(j, w_tower[1]))
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                if i != 0 or j != 0:
+                    if b_king[0] + i == w_tower[0] and b_king[1] + j == w_tower[1]:
+                        penalty += 1000
 
-                # Si el rei esta dins la caixa
-                if tr[0] <= b_king[0] <= bl[0] and tr[1] >= b_king[1] >= bl[1]:
+                    if b_king[0] + i == w_king[0] and b_king[1] + j == w_king[1]:
+                        penalty += 1000
 
-                    # Restem l'area de la caixa, aixi cada cop estarem fent una area mes petita
-                    score -= np.abs(w_tower[0] - i) * np.abs(w_tower[1] - j)
+        b_king_cmd = min(np.abs(b_king[0]-3) + np.abs(b_king[1]-3),
+                         np.abs(b_king[0]-3) + np.abs(b_king[1]-4),
+                         np.abs(b_king[0]-4) + np.abs(b_king[1]-3),
+                         np.abs(b_king[0]-4) + np.abs(b_king[1]-4))
 
-                    # El rei blanc ha d'estar fora de la caixa però a prop del rei i la torre
-                    if not (tr[0] < w_king[0] < bl[0] and tr[1] > w_king[1] > bl[1]):
-                        dist = max(np.abs(w_king[0] - b_king[0]), np.abs(w_king[1] - b_king[1]))
-                        score += 7 - dist
-                    else:
-                        score -= 10
+        if max(np.abs(b_king[0]-w_tower[0]), np.abs(b_king[1]-w_tower[1])) == 1:
+            penalty += 1000
 
-        return score
+        if max(np.abs(b_king[0]-w_king[0]), np.abs(b_king[1]-w_king[1])) == 1:
+            bonus += 20
+
+        w_t_b_k_df = abs(b_king[1] - w_tower[1])
+        w_t_b_k_dr = abs(b_king[0] - w_tower[0])
+        w_t_b_k_test = (max(w_t_b_k_df, w_t_b_k_dr) / float(min(w_t_b_k_df, w_t_b_k_dr) + 1)) - 1
+
+        if w_king[0] == b_king[0] and w_king[0] == w_tower[0]:
+            if w_tower[1] < w_king[1] < b_king[1] or w_tower[1] > w_king[1] > b_king[1]:
+                w_t_b_k_test = -2 * w_t_b_k_test
+        elif w_king[1] == b_king[1] and w_king[1] == w_tower[1]:
+            if w_tower[0] < w_king[1] < b_king[0] or w_tower[0] > w_king[0] > b_king[0]:
+                w_t_b_k_test = -2 * w_t_b_k_test
+
+        w_k_b_k_man = np.abs(b_king[0] - w_king[0]) + np.abs(b_king[1] - w_king[1])
+
+        return 9.7*b_king_cmd + 1.6+(14 - w_k_b_k_man) + w_t_b_k_test + bonus - penalty
 
     def arrastreB(self, b_king, w_king, b_tower):
-        score = 100
 
-        # No interessa que la torre estigui en linia amb el rei
-        if b_tower[0] == w_king[0] or b_tower[1] == w_king[1]:
-            score -= 25
+        bonus = 0
+        penalty = 0
 
-        # No interessa que la torre estigui a prop del rei
-        for i in range(-1, 2, 2):
-            for j in range(-1, 2, 2):
-                if w_king[0] + i == b_tower[0] and w_king[1] + j == b_tower[1]:
-                    score -= 50
 
-        # Busquem la caixa que forma la torre amb el rei negre dins
-        for i in range(0, 8, 7):
-            for j in range(0, 8, 7):
 
-                tr = (min(i, b_tower[0]), max(j, b_tower[1]))
-                bl = (max(i, b_tower[0]), min(j, b_tower[1]))
+        w_king_cmd = min(np.abs(w_king[0] - 3) + np.abs(w_king[1] - 3),
+                         np.abs(w_king[0] - 3) + np.abs(w_king[1] - 4),
+                         np.abs(w_king[0] - 4) + np.abs(w_king[1] - 3),
+                         np.abs(w_king[0] - 4) + np.abs(w_king[1] - 4))
 
-                # Si el rei esta dins la caixa
-                if tr[0] <= b_king[0] <= bl[0] and tr[1] >= b_king[1] >= bl[1]:
+        if max(np.abs(w_king[0] - b_tower[0]), np.abs(w_king[1] - b_tower[1])) == 1:
+            penalty += 1000
 
-                    # Restem l'area de la caixa, aixi cada cop estarem fent una area mes petita
-                    score -= np.abs(b_tower[0] - i) * np.abs(b_tower[1] - j)
+        if max(np.abs(w_king[0] - b_king[0]), np.abs(w_king[1] - b_king[1])) == 1:
+            bonus += 20
 
-                    # El rei blanc ha d'estar fora de la caixa però a prop del rei i la torre
-                    if not (tr[0] < b_king[0] < bl[0] and tr[1] > b_king[1] > bl[1]):
-                        dist = max(np.abs(b_king[0] - w_king[0]), np.abs(b_king[1] - w_king[1]))
-                        score += 7 - dist
-                    else:
-                        score -= 10
+        w_t_b_k_df = abs(w_king[1] - b_tower[1])
+        w_t_b_k_dr = abs(w_king[0] - b_tower[0])
+        w_t_b_k_test = (max(w_t_b_k_df, w_t_b_k_dr) / float(min(w_t_b_k_df, w_t_b_k_dr) + 1)) - 1
 
-        return score
+        if w_king[0] == b_king[0] and w_king[0] == b_tower[0]:
+            if b_tower[1] < b_king[1] < w_king[1] or b_tower[1] > b_king[1] > w_king[1]:
+                w_t_b_k_test = -2 * w_t_b_k_test
+        elif w_king[1] == b_king[1] and w_king[1] == b_tower[1]:
+            if b_tower[0] < b_king[1] < w_king[0] or b_tower[0] > b_king[0] > w_king[0]:
+                w_t_b_k_test = -2 * w_t_b_k_test
+
+        w_k_b_k_man = np.abs(b_king[0] - w_king[0]) + np.abs(b_king[1] - w_king[1])
+
+        return 9.7 * w_king_cmd + 1.6 + (14 - w_k_b_k_man) + w_t_b_k_test + bonus - penalty
 
 def translate(s):
     """
@@ -1000,7 +1017,7 @@ if __name__ == "__main__":
     # starting from current state find the end state (check mate) - recursive function
     # aichess.chess.boardSim.listVisitedStates = []
     # find the shortest path, initial depth 0
-    depth = 2
+    depth = 4
     move_number = 0
 
     print("UTILITYW: ", aichess.utilityW(currentStateW))

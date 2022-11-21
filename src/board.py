@@ -178,15 +178,16 @@ class Board():
                                            [mypiece[0] - 1, mypiece[1] - 1, 12], \
                                            [mypiece[0] - 1, mypiece[1], 12], [mypiece[0] - 1, mypiece[1] + 1, 12], \
                                            [mypiece[0], mypiece[1] + 1, 12], [mypiece[0] + 1, mypiece[1] + 1, 12]]
+
                 # check they are empty
                 for k in range(len(listPotentialNextStates)):
 
                     aa = listPotentialNextStates[k]
-                    if aa[0] > -1 and aa[0] < 8 and aa[1] > -1 and aa[1] < 8 and listPotentialNextStates[
-                        k] not in listOtherPieces and listPotentialNextStates[k] not in self.currentStateW:
+                    if aa[0] > -1 and aa[0] < 8 and aa[1] > -1 and aa[1] < 8 and listPotentialNextStates[k] not in listOtherPieces and listPotentialNextStates[k] not in self.currentStateW:
 
                         if self.board[aa[0]][aa[1]] == None:
                             self.listSuccessorStatesB.append([aa[0], aa[1], aa[2]])
+
 
 
             elif (str(self.board[mypiece[0]][mypiece[1]]) == '\033[94m' + 'P' + '\033[0m'):
