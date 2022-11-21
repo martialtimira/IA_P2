@@ -458,7 +458,6 @@ class Aichess():
                 if pieceToMove.is_valid_move(self.chess.boardSim, start, to):
                     self.chess.moveSim(start, to, False)
                     t, state_list = self.max_valueW(self.getCurrentStateW(), depth + 1)
-                    v = min(v, t)
                     if t < v:
                         v = t
                         return_state = state
@@ -545,7 +544,6 @@ class Aichess():
                 if pieceToMove.is_valid_move(self.chess.boardSim, start, to):
                     self.chess.moveSim(start, to, False)
                     t, state_list = self.max_valueABW(self.getCurrentStateW(), depth + 1, alpha, beta)
-                    v = min(v, t)
                     if t < v:
                         v = t
                         return_state = state
@@ -564,6 +562,84 @@ class Aichess():
                     if v <= alpha:
                         return v, return_state
                     beta = min(beta, v)
+        return v, return_state
+
+    def expectMiniMaxW(self, mystate, depth):
+        self.depthMax = depth
+        move = ()
+        if self.isCheckMateW(mystate):
+            return move
+
+        v, state_list = self.expect_max_valueW(mystate, 0)
+        start, to, piece = self.getMoveFromStates(self.currentStateW, state_list)
+        move = (start, to)
+
+        return move
+
+    def expect_max_valueW(self, mystate, depth):
+        return_state = mystate
+        if depth >= self.depthMax or self.isCheckMateW(mystate):
+            return self.utilityW(mystate), return_state
+        v = -sys.maxsize
+        values = []
+        nextStateList = self.getListNextStatesW(mystate)
+        for state in nextStateList:
+            start, to, piece_moved = self.getMoveFromStates(mystate, state)
+            if not self.checkSuicideW(piece_moved, to) and (not self.isCheckW(state) or piece_moved == 6):
+                pieceThere = self.chess.boardSim.board[to[0]][to[1]]
+                pieceToMove = self.chess.boardSim.board[start[0]][start[1]]
+                if pieceToMove != None:
+                    if pieceToMove.is_valid_move(self.chess.boardSim, start, to):
+                        self.chess.moveSim(start, to, False)
+                        t, state_list = self.expect_chance_valueW(state, depth + 1)
+                        values.append((state_list, t))
+                        # v = max(v, t)
+                        if t > v:
+                            v = t
+                            return_state = state
+
+                        self.chess.moveSim(to, start, False)
+                        if pieceThere != None:
+                            if pieceThere.name == 'R' and not pieceThere.color:
+                                self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(False)
+                            if pieceThere.name == 'K' and not pieceThere.color:
+                                self.chess.boardSim.board[to[0]][to[1]] = piece.King(False)
+                            if pieceThere.name == 'R' and pieceThere.color:
+                                self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(True)
+                            if pieceThere.name == 'K' and pieceThere.color:
+                                self.chess.boardSim.board[to[0]][to[1]] = piece.King(True)
+                        self.refresh_states()
+
+        return v, return_state
+
+    def expect_chance_valueW(self, mystate, depth):
+        return_state = mystate
+        currentState = self.getCurrentStateB().copy()
+        if depth >= self.depthMax or self.isCheckMateW(mystate):
+            return self.utilityW(mystate), return_state
+        v = 0
+        nextStates = self.getListNextStatesB(currentState)
+        chance = 1 / len(nextStates)
+        for state in nextStates:
+            start, to, piece_moved = self.getMoveFromStates(currentState, state)
+            pieceThere = self.chess.boardSim.board[to[0]][to[1]]
+            pieceToMove = self.chess.boardSim.board[start[0]][start[1]]
+            if pieceToMove != None:
+                if pieceToMove.is_valid_move(self.chess.boardSim, start, to):
+                    self.chess.moveSim(start, to, False)
+                    t, state_list = self.expect_max_valueW(self.getCurrentStateW(), depth + 1)
+                    v += chance * t
+                    self.chess.moveSim(to, start, False)
+                    if pieceThere != None:
+                        if pieceThere.name == 'R' and not pieceThere.color:
+                            self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(False)
+                        if pieceThere.name == 'K' and not pieceThere.color:
+                            self.chess.boardSim.board[to[0]][to[1]] = piece.King(False)
+                        if pieceThere.name == 'R' and pieceThere.color:
+                            self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(True)
+                        if pieceThere.name == 'K' and pieceThere.color:
+                            self.chess.boardSim.board[to[0]][to[1]] = piece.King(True)
+                    self.refresh_states()
         return v, return_state
 
     #Utility Mini-Max, Min-Value and Max-Value for black pieces
@@ -709,7 +785,6 @@ class Aichess():
                 if pieceToMove.is_valid_move(self.chess.boardSim, start, to):
                     self.chess.moveSim(start, to, False)
                     t, state_list = self.max_valueB(self.getCurrentStateB(), depth + 1)
-                    v = min(v, t)
                     if t < v:
                         v = t
                         return_state = state
@@ -750,7 +825,7 @@ class Aichess():
         nextStateList = self.getListNextStatesB(mystate)
         for state in nextStateList:
             start, to, piece_moved = self.getMoveFromStates(mystate, state)
-            if not self.checkSuicideB(piece_moved, to) and (not self.isCheckB(state) or piece_moved == 6):
+            if not self.checkSuicideB(piece_moved, to) and (not self.isCheckB(state) or piece_moved == 12):
                 pieceThere = self.chess.boardSim.board[to[0]][to[1]]
                 pieceToMove = self.chess.boardSim.board[start[0]][start[1]]
                 if pieceToMove != None:
@@ -796,7 +871,6 @@ class Aichess():
                 if pieceToMove.is_valid_move(self.chess.boardSim, start, to):
                     self.chess.moveSim(start, to, False)
                     t, state_list = self.max_valueABB(self.getCurrentStateB(), depth + 1, alpha, beta)
-                    v = min(v, t)
                     if t < v:
                         v = t
                         return_state = state
@@ -815,6 +889,84 @@ class Aichess():
                     if v <= alpha:
                         return v, return_state
                     beta = min(beta, v)
+        return v, return_state
+
+    def expectMiniMaxB(self, mystate, depth):
+        self.depthMax = depth
+        move = ()
+        if self.isCheckMateW(mystate):
+            return move
+
+        v, state_list = self.expect_max_valueB(mystate, 0)
+        start, to, piece = self.getMoveFromStates(self.currentStateW, state_list)
+        move = (start, to)
+
+        return move
+
+    def expect_max_valueB(self, mystate, depth):
+        return_state = mystate
+        if depth >= self.depthMax or self.isCheckMateB(mystate):
+            return self.utilityB(mystate), return_state
+        v = -sys.maxsize
+        values = []
+        nextStateList = self.getListNextStatesB(mystate)
+        for state in nextStateList:
+            start, to, piece_moved = self.getMoveFromStates(mystate, state)
+            if not self.checkSuicideB(piece_moved, to) and (not self.isCheckB(state) or piece_moved == 12):
+                pieceThere = self.chess.boardSim.board[to[0]][to[1]]
+                pieceToMove = self.chess.boardSim.board[start[0]][start[1]]
+                if pieceToMove != None:
+                    if pieceToMove.is_valid_move(self.chess.boardSim, start, to):
+                        self.chess.moveSim(start, to, False)
+                        t, state_list = self.expect_chance_valueB(state, depth + 1)
+                        values.append((state_list, t))
+                        # v = max(v, t)
+                        if t > v:
+                            v = t
+                            return_state = state
+
+                        self.chess.moveSim(to, start, False)
+                        if pieceThere != None:
+                            if pieceThere.name == 'R' and not pieceThere.color:
+                                self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(False)
+                            if pieceThere.name == 'K' and not pieceThere.color:
+                                self.chess.boardSim.board[to[0]][to[1]] = piece.King(False)
+                            if pieceThere.name == 'R' and pieceThere.color:
+                                self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(True)
+                            if pieceThere.name == 'K' and pieceThere.color:
+                                self.chess.boardSim.board[to[0]][to[1]] = piece.King(True)
+                        self.refresh_states()
+
+        return v, return_state
+
+    def expect_chance_valueB(self, mystate, depth):
+        return_state = mystate
+        currentState = self.getCurrentStateW().copy()
+        if depth >= self.depthMax or self.isCheckMateB(mystate):
+            return self.utilityB(mystate), return_state
+        v = 0
+        nextStates = self.getListNextStatesW(currentState)
+        chance = 1 / len(nextStates)
+        for state in nextStates:
+            start, to, piece_moved = self.getMoveFromStates(currentState, state)
+            pieceThere = self.chess.boardSim.board[to[0]][to[1]]
+            pieceToMove = self.chess.boardSim.board[start[0]][start[1]]
+            if pieceToMove != None:
+                if pieceToMove.is_valid_move(self.chess.boardSim, start, to):
+                    self.chess.moveSim(start, to, False)
+                    t, state_list = self.expect_max_valueB(self.getCurrentStateB(), depth + 1)
+                    v += chance * t
+                    self.chess.moveSim(to, start, False)
+                    if pieceThere != None:
+                        if pieceThere.name == 'R' and not pieceThere.color:
+                            self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(False)
+                        if pieceThere.name == 'K' and not pieceThere.color:
+                            self.chess.boardSim.board[to[0]][to[1]] = piece.King(False)
+                        if pieceThere.name == 'R' and pieceThere.color:
+                            self.chess.boardSim.board[to[0]][to[1]] = piece.Rook(True)
+                        if pieceThere.name == 'K' and pieceThere.color:
+                            self.chess.boardSim.board[to[0]][to[1]] = piece.King(True)
+                    self.refresh_states()
         return v, return_state
 
     def refresh_states(self):
@@ -1020,12 +1172,10 @@ if __name__ == "__main__":
     depth = 4
     move_number = 0
 
-    print("UTILITYW: ", aichess.utilityW(currentStateW))
-    print(aichess.getListNextStatesW(currentStateW))
     while not aichess.isCheckMateW(aichess.getCurrentStateW()) or aichess.isCheckMateB(aichess.getCurrentStateB()):
         currentStateW = aichess.getCurrentStateW()
         print("NEXT STATES: ", aichess.getListNextStatesW(currentStateW))
-        nextMove = aichess.miniMaxW(currentStateW, depth)
+        nextMove = aichess.alpha_beta_searchW(currentStateW, depth)
         print("NM: ", nextMove)
         aichess.chess.moveSim(nextMove[0],nextMove[1], True)
         aichess.chess.boardSim.print_board()
@@ -1036,7 +1186,7 @@ if __name__ == "__main__":
 
         currentStateB = aichess.getCurrentStateB()
         print("NEXT STATES: ",  aichess.getListNextStatesB(currentStateB))
-        nextMove = aichess.miniMaxB(currentStateB, depth)
+        nextMove = aichess.alpha_beta_searchB(currentStateB, depth)
         print("NM: ", nextMove)
         aichess.chess.moveSim(nextMove[0], nextMove[1], True)
         aichess.chess.boardSim.print_board()
